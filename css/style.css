@@ -1,0 +1,106 @@
+body{
+	background: #222;
+	margin: 0;
+	overflow: hidden;
+	background: #222;
+}
+
+canvas {
+	width: 100%;
+	height: 100%;
+	display: block;
+	background: RGBA(140,0,0,1);
+
+}
+
+#ui{
+	margin: 0;
+	overflow: hidden;
+	width: 100%;
+	height: 100%;
+	background: #222;
+	opacity: 0.5;
+}
+
+#resetBtn{
+	position: fixed;
+	width: 100px;
+	height: 50px;
+	z-index: 3;
+	top: 630px;
+	left: 200px;
+	background: RGBA(50,50,50,1);
+	border: 2px solid RGBA(140,140,140,1);
+	border-radius: 2px;
+	color: RGBA(120,120,120,1);
+	box-shadow: 3px 3px 5px #000000;
+	font-family: monospace;
+	font-size: 20px;
+	font-weight: bold;
+}
+
+#resetBtn:hover{
+	border: 4px solid RGBA(140,140,140,1);
+	box-shadow: 5px 5px 10px #111111;
+
+}
+
+#agent-pos{
+	position: fixed;
+	width: 600px;
+	height: 50px;
+	text-align: left;
+	margin-left: 180px;
+	margin-top: 35px;
+	font-family: monospace;
+	font-family: cursive;
+	font-size: 30px;
+	z-index: 1;
+}
+
+#agent-history-holder{
+	position: fixed;
+	overflow: hidden;
+	width: 180px;
+	height: 57px;
+	margin: 0px;
+	text-align: left;
+	padding-left: 1px;
+}
+
+#agent-history{
+	position: fixed;
+	width: 100%;
+	 height: 100%;
+	 overflow: scroll;
+	 padding-right: 17px;
+	margin-left: 0px;
+	margin-top: 80px;
+	text-align: left;
+	padding-left: 20px;
+	font-size: 10px;
+	color: RGBA(100,100,100,1);
+	z-index: 2;
+	font-family: cursive;
+}
+
+.neutral{	color: RGBA(170, 170,170,1);}
+.green{	color: RGBA(150, 200,150,1) }
+.red{	color: RGBA(200, 150,150,1); }
+.start{	color: RGBA(150, 150,200,1); }
+.history-text{	margin: 0px }
+
+
+.scroll::-webkit-scrollbar {
+    width: 12px;
+}
+
+.scroll::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    border-radius: 10px;
+}
+
+.scroll::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+}
