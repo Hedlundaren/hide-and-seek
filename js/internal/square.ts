@@ -38,8 +38,11 @@ class Square{
   public getUtility(){
     return this._utility;
   }
-  public setUtility(U : number){
+  public addUtility(U : number){
     return this._utility += U;
+  }
+  public setUtility(U : number){
+    return this._utility = U;
   }
 
   public getReward() : number{
@@ -99,7 +102,6 @@ class Square{
         break;
       case "wallhit":
         this._graphics.tint = 170001003900;
-        this._graphics.tint = 16777215;
         break;
 
       default:

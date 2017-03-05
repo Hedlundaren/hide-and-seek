@@ -23,8 +23,11 @@ var Square = (function () {
     Square.prototype.getUtility = function () {
         return this._utility;
     };
-    Square.prototype.setUtility = function (U) {
+    Square.prototype.addUtility = function (U) {
         return this._utility += U;
+    };
+    Square.prototype.setUtility = function (U) {
+        return this._utility = U;
     };
     Square.prototype.getReward = function () {
         switch (this._type) {
@@ -78,7 +81,6 @@ var Square = (function () {
                 break;
             case "wallhit":
                 this._graphics.tint = 170001003900;
-                this._graphics.tint = 16777215;
                 break;
             default:
                 this._graphics.tint = 16777215;

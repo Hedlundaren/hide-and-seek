@@ -27,7 +27,6 @@ var Agent = (function () {
             }
         };
         this.onKeyDown = function (e) {
-            console.log(e);
             var size = Math.sqrt(Environment._squares.length);
             if (e) {
                 switch (e.keyCode) {
@@ -61,6 +60,7 @@ var Agent = (function () {
         this._velocity = $V([0, 0]);
         this._acceleration = $V([0, 0]);
         this._mass = 0.8;
+        this._totalReward = 0.0;
         this._sprite = new Sprite("textures/test.png");
         this._goalPosition = this._position;
         this._currentSquare = 15;
@@ -74,19 +74,7 @@ var Agent = (function () {
         window.addEventListener('mousedown', this.onMouseDown, false);
     }
     Agent.prototype.calcValueIteration = function (s) {
-        this._iteration++;
-        if (this._iteration > 50)
-            return;
-        var gamma = .99;
-        var reward = Environment._squares[s].getReward();
-        var prob = 0.8;
-        var left = Environment._squares[this.getLeftId(s)].getReward();
-        var up = Environment._squares[this.getUpId(s)].getReward();
-        var right = Environment._squares[this.getRightId(s)].getReward();
-        var down = Environment._squares[this.getUpId(s)].getReward();
-        var PUvalue = Math.max(left, up, right, down);
-        var U = reward + gamma * PUvalue;
-        return U;
+        return this._totalReward;
     };
     Agent.prototype.calcPolicyIteration = function () {
     };
@@ -94,7 +82,7 @@ var Agent = (function () {
         switch (type) {
             case "value":
                 var U = this.calcValueIteration(this._currentSquare);
-                Environment._squares[this._currentSquare].setUtility(U);
+                Environment._squares[this._currentSquare].addUtility(U);
                 this._iteration = 0;
                 break;
             case "policy":
@@ -147,6 +135,7 @@ var Agent = (function () {
         Environment._squares[goal].enterSquare();
         Environment._squares[prev].leaveSquare();
         this._goalPosition = Environment._squares[this._currentSquare]._center;
+        this._totalReward += Environment._squares[this._currentSquare].getReward();
         this._numOfMoves++;
         this.updateInfo();
         this.calculateMove("value");
@@ -179,7 +168,7 @@ var Agent = (function () {
             '>' + this._numOfMoves +
             ' | ' + '(' + pos[0] + ',' + pos[1] + ')' +
             ' | ' + Environment._squares[this._currentSquare].getReward() +
-            ' | ' + Environment._squares[this._currentSquare].getUtility() +
+            ' | ' + Math.round(this._totalReward * 100) / 100 +
             '</p>';
     };
     Agent.prototype.updateGridPosInfo = function () {
@@ -203,6 +192,7 @@ var Agent = (function () {
         this._numOfMoves = 0;
         this._currentSquare = start;
         this._iteration = 0;
+        this._totalReward = 0;
         for (var i = 0; i < Environment._squares.length; i++) {
             Environment._squares[i].setUtility(0);
         }
