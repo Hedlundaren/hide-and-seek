@@ -21,6 +21,11 @@ class Stopwatch{
       this._time -= deltaTime;
     else this._done = true;
   }
+
+  public setStartTime(t){
+    this._startTime = t;
+  }
+  public getStartTime(){ return this._startTime; }
 }
 
 class Agent{
@@ -50,7 +55,7 @@ class Agent{
     this._position = Environment._squares[15]._center;
     this._velocity = $V([0, 0]);
     this._acceleration = $V([0, 0]);
-    this._mass = 0.8;
+    this._mass = 0.6;
     this._brainType = "stupid";
     this._totalReward = 0.0;
     this._sprite = new Sprite("textures/test.png");
@@ -58,7 +63,7 @@ class Agent{
     this._currentSquare = 15;
     this._numOfMoves = 0;
     this._iteration = 0;
-    this._travelTimer = new Stopwatch(1.7);
+    this._travelTimer = new Stopwatch(1.07);
     this._autoMove = false;
     this._nextMove = ""
     this._envSize = Math.sqrt(Environment._squares.length);
@@ -70,12 +75,15 @@ class Agent{
     this.updateInfo();
     window.addEventListener( 'keydown', this.onKeyDown, false );
     window.addEventListener( 'mousedown', this.onMouseDown, false );
+
+
   }
 
   // ========================================
   // =============== INPUT ==================
   // ========================================
   onMouseDown = (e) => {
+
     switch (e.target.value) {
       case "Reset":
         this.reset(15);
@@ -83,7 +91,14 @@ class Agent{
 
       case "Auto":
         this.toggleAutoMove();
+      break;
 
+      case "SpeedUp":
+        this.multiplySpeed(1.2);
+      break;
+
+      case "SpeedDown":
+        this.multiplySpeed(0.8);
       break;
 
       case "HUD":
@@ -130,10 +145,27 @@ class Agent{
           this.reset(15);
           this._nextMove = "";
           break;
-
-          case 72:
-            this.toggleHUD();
-            break;
+        case 72:
+          this.toggleHUD();
+          break;
+        case 32:
+          this.toggleAutoMove();
+          break;
+        case 188:
+          this.multiplySpeed(0.8);
+          break;
+        case 190:
+          this.multiplySpeed(1.2);
+          break;
+        case 49:
+          this.setBrain("stupid");
+          break;
+        case 50:
+          this.setBrain("simple");
+          break;
+        case 51:
+          this.setBrain("smart");
+          break;
         default:
       }
     }
@@ -146,9 +178,11 @@ class Agent{
     this._autoMove = !this._autoMove;
     var autoMoveChecker = document.getElementById('autoMoveChecker');
     this.toggleCheckColor(autoMoveChecker, this._autoMove);
+    $('.fa-play').toggleClass('fa-pause');
   }
 
   private setBrain(type : string) : void{
+    this.setBrainSelected(type, this._brainType);
     this._brainType = type;
   }
 
@@ -275,6 +309,13 @@ class Agent{
     }
   }
 
+  private setBrainSelected(current_id, prev_id){
+    var current = document.getElementById(current_id);
+    var prev = document.getElementById(prev_id);
+    $(prev).css("opacity", "0.5");
+    $(current).css("opacity", "1.0");
+  }
+
   private toggleHUD() : void{
     $("#HUD").fadeToggle(300, null);
     this._HUD = !this._HUD;
@@ -299,7 +340,7 @@ class Agent{
   }
   private updateHistoryInfo() : void{
     var agentHistoryDiv = document.getElementById('agent-history');
-    agentHistoryDiv.innerHTML = this.getInfoString() + agentHistoryDiv.innerHTML;
+    agentHistoryDiv.innerHTML = this.getInfoString() + agentHistoryDiv.innerHTML.substring(0,2000);
   }
 
   private clearHistory(){
@@ -397,11 +438,16 @@ class Agent{
   // ========================================
   // =========== PHYSICAL ENGINE ============
   // ========================================
+  private multiplySpeed(factor : number) : void{
+    var newTime = this._travelTimer.getStartTime() * (1/factor);
+    this._travelTimer.setStartTime(newTime);
+  }
+
   private moveTowardsGoal(deltaTime) : void{
     // PID, the I is silent
     var kP : number = .0004;
     var kI : number = .0;
-    var kD : number = .7;
+    var kD : number = 0.9;
 
     var pos_error = this._goalPosition.add(this._position.multiply(-1));
     this._pos_integral = this._pos_integral.add(pos_error.multiply(deltaTime));

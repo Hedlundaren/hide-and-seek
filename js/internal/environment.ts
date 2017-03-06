@@ -7,7 +7,7 @@ class Environment{
   static _squares : Square[];
   static _background : Square;
   constructor(){
-    this.createGrid(6, 6);
+    this.createGrid(6, 6, 427);
     this._agent = new Agent();
   }
 
@@ -20,12 +20,12 @@ class Environment{
     }
   }
 
-  private createGrid(X,Y){
+  private createGrid(X,Y, envSize){
     Environment._squares = [];
-    var xStart = 200;
+    var xStart = 160;
     var yStart = 100;
-    var squareSize = 80;
     var margin = 1;
+    var squareSize = envSize/X - margin;
 
     var bg_margin = 20;
 

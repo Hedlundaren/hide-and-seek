@@ -1,8 +1,7 @@
 body{
-	background: #222;
 	margin: 0;
 	overflow: hidden;
-	background: #222;
+	background: #ffffff;
 }
 
 canvas {
@@ -10,6 +9,7 @@ canvas {
 	height: 100%;
 	display: block;
 	background: RGBA(140,0,0,1);
+	opacity: 1.0;
 }
 
 #HUD{
@@ -18,60 +18,52 @@ canvas {
 	width: 100%;
 	height: 100%;
 	background: #222;
-	opacity: 0.5;
+	opacity: 0.7;
+}
+
+.button{
+	cursor: default;
 }
 
 .ui-button{
 	position: fixed;
-
 	z-index: 3;
-	left: 630px;
-	background: RGBA(50,50,50,1);
+	top: 560px;
+	width: 50px;
+	height: 50px;
+	background: RGBA(50,50,50,0);
 	border: 2px solid RGBA(140,140,140,1);
 	border-radius: 2px;
 	color: RGBA(120,120,120,1);
-	box-shadow: 3px 3px 5px #000000;
 	font-family: monospace;
 	font-size: 20px;
 	font-weight: bold;
 
 }
 .ui-button:hover{
-	border: 4px solid RGBA(140,140,140,1);
-	box-shadow: 5px 5px 10px #111111;
+	box-shadow: 0px 0px 5px #99cc99;
+	border: 2px solid RGBA(200,200,200,1);
+	color: RGBA(200,200,200,1);
 }
 
-#resetBtn{
-	top: 100px;
-	width: 100px;
-	height: 50px;
-}
-
-#autoMoveChecker{
-	top: 160px;
-	width: 100px;
-	height: 50px;
-	border-left: 10px solid RGBA(140,100,100,1);
-}
-
-#HUDToggle{
-	top: 220px;
-	width: 100px;
-	height: 50px;
-	border-left: 10px solid RGBA(100,140,100,1);
+.ui-button:active{
+	border: 2px solid RGBA(140,140,140,1);
+	color: RGBA(120,120,120,1);
+	box-shadow: 0px 0px 0px #99cc99;
 }
 
 .brain-button{
 	position: fixed;
-
+	opacity: 0.5;
 	z-index: 3;
-	top: 548px;
+	left: 607px;
+	width: 100px;
+	height: 50px;
 	background: RGBA(50,50,50,1);
 	border: 2px solid RGBA(140,140,140,1);
-	border-top: 0px solid RGBA(140,140,140,1);
-	border-bottom-right-radius: 6px;
-	border-bottom-left-radius: 6px;
+	border-left: 0px solid RGBA(140,140,140,1);
 	color: RGBA(120,120,120,1);
+	box-shadow: inset 0 0 0 1	px rgba(255,255,255,.5);
 	box-shadow: 3px 3px 5px #000000;
 	font-family: monospace;
 	font-size: 20px;
@@ -79,22 +71,65 @@ canvas {
 
 }
 .brain-button:hover{
-	border: 4px solid RGBA(140,140,140,1);
-	border-top: 0px solid RGBA(140,140,140,1);
-	box-shadow: 5px 5px 10px #111111;
+	box-shadow: 2px 0px 5px #99cc99;
+	border: 2px solid RGBA(200,200,200,1);
+	border-left: 0px solid RGBA(200,200,200,1);
+}
+
+.brain-button:active{
+	border: 2px solid RGBA(140,140,140,1);
+	border-left: 0px solid RGBA(200,200,200,1);
+	color: RGBA(120,120,120,1);
+	box-shadow: 0px 0px 0px #99cc99;
 }
 
 #stupid{
-	left: 160px;
-	width: 100px;
-	height: 50px;
+	top: 150px;
+}
+#simple{
+	top: 210px;
 }
 
-#simple{
-	margin-left: 5px;
-	left: 260px;
-	width: 100px;
-	height: 50px;
+.agent-icon{
+	opacity: 1.0;
+}
+
+.brain-icon{
+	margin-top: 10px;
+	margin-left: 4px;
+}
+
+#brain-symbol{
+	position: fixed;
+	color: RGBA(120, 120, 120, 1);
+	border-radius: 100px;
+	top: 90px;
+	left: 630px;
+}
+
+#reset-div{
+	border-radius: 100px;
+	left: 160px;
+}
+
+#play-div{
+	border-radius: 100px;
+	left: 220px;
+}
+
+#speed-down-div{
+	border-radius: 100px;
+	left: 280px;
+}
+
+#speed-up-div{
+	border-radius: 100px;
+	left: 340px;
+}
+
+#gauge-div{
+	border-radius: 100px;
+	left: 400px;
 }
 
 #agent-pos{

@@ -13,6 +13,10 @@ var Stopwatch = (function () {
         else
             this._done = true;
     };
+    Stopwatch.prototype.setStartTime = function (t) {
+        this._startTime = t;
+    };
+    Stopwatch.prototype.getStartTime = function () { return this._startTime; };
     return Stopwatch;
 }());
 var Agent = (function () {
@@ -25,6 +29,12 @@ var Agent = (function () {
                     break;
                 case "Auto":
                     _this.toggleAutoMove();
+                    break;
+                case "SpeedUp":
+                    _this.multiplySpeed(1.2);
+                    break;
+                case "SpeedDown":
+                    _this.multiplySpeed(0.8);
                     break;
                 case "HUD":
                     _this.toggleHUD();
@@ -68,6 +78,24 @@ var Agent = (function () {
                     case 72:
                         _this.toggleHUD();
                         break;
+                    case 32:
+                        _this.toggleAutoMove();
+                        break;
+                    case 188:
+                        _this.multiplySpeed(0.8);
+                        break;
+                    case 190:
+                        _this.multiplySpeed(1.2);
+                        break;
+                    case 49:
+                        _this.setBrain("stupid");
+                        break;
+                    case 50:
+                        _this.setBrain("simple");
+                        break;
+                    case 51:
+                        _this.setBrain("smart");
+                        break;
                     default:
                 }
             }
@@ -75,7 +103,7 @@ var Agent = (function () {
         this._position = Environment._squares[15]._center;
         this._velocity = $V([0, 0]);
         this._acceleration = $V([0, 0]);
-        this._mass = 0.8;
+        this._mass = 0.6;
         this._brainType = "stupid";
         this._totalReward = 0.0;
         this._sprite = new Sprite("textures/test.png");
@@ -83,7 +111,7 @@ var Agent = (function () {
         this._currentSquare = 15;
         this._numOfMoves = 0;
         this._iteration = 0;
-        this._travelTimer = new Stopwatch(1.7);
+        this._travelTimer = new Stopwatch(1.07);
         this._autoMove = false;
         this._nextMove = "";
         this._envSize = Math.sqrt(Environment._squares.length);
@@ -98,8 +126,10 @@ var Agent = (function () {
         this._autoMove = !this._autoMove;
         var autoMoveChecker = document.getElementById('autoMoveChecker');
         this.toggleCheckColor(autoMoveChecker, this._autoMove);
+        $('.fa-play').toggleClass('fa-pause');
     };
     Agent.prototype.setBrain = function (type) {
+        this.setBrainSelected(type, this._brainType);
         this._brainType = type;
     };
     Agent.prototype.thinkStupid = function () {
@@ -213,6 +243,12 @@ var Agent = (function () {
             $(element).css("border-left", "10px solid RGBA(140,100,100,1)");
         }
     };
+    Agent.prototype.setBrainSelected = function (current_id, prev_id) {
+        var current = document.getElementById(current_id);
+        var prev = document.getElementById(prev_id);
+        $(prev).css("opacity", "0.5");
+        $(current).css("opacity", "1.0");
+    };
     Agent.prototype.toggleHUD = function () {
         $("#HUD").fadeToggle(300, null);
         this._HUD = !this._HUD;
@@ -234,7 +270,7 @@ var Agent = (function () {
     };
     Agent.prototype.updateHistoryInfo = function () {
         var agentHistoryDiv = document.getElementById('agent-history');
-        agentHistoryDiv.innerHTML = this.getInfoString() + agentHistoryDiv.innerHTML;
+        agentHistoryDiv.innerHTML = this.getInfoString() + agentHistoryDiv.innerHTML.substring(0, 2000);
     };
     Agent.prototype.clearHistory = function () {
         document.getElementById('agent-history').innerText = "";
@@ -323,10 +359,14 @@ var Agent = (function () {
         var yPos = this._currentSquare % 6;
         return $V([xPos, yPos]);
     };
+    Agent.prototype.multiplySpeed = function (factor) {
+        var newTime = this._travelTimer.getStartTime() * (1 / factor);
+        this._travelTimer.setStartTime(newTime);
+    };
     Agent.prototype.moveTowardsGoal = function (deltaTime) {
         var kP = .0004;
         var kI = .0;
-        var kD = .7;
+        var kD = 0.9;
         var pos_error = this._goalPosition.add(this._position.multiply(-1));
         this._pos_integral = this._pos_integral.add(pos_error.multiply(deltaTime));
         var pos_derivative = pos_error.add(this._prev_pos_error.multiply(-1)).multiply(1.0 / deltaTime);

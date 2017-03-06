@@ -1,6 +1,6 @@
 var Environment = (function () {
     function Environment() {
-        this.createGrid(6, 6, 420);
+        this.createGrid(6, 6, 427);
         this._agent = new Agent();
     }
     Environment.prototype.update = function (deltaTime) {
@@ -12,10 +12,10 @@ var Environment = (function () {
     };
     Environment.prototype.createGrid = function (X, Y, envSize) {
         Environment._squares = [];
-        var xStart = 170;
+        var xStart = 160;
         var yStart = 100;
-        var squareSize = envSize/X;
         var margin = 1;
+        var squareSize = envSize / X - margin;
         var bg_margin = 20;
         var backdrop1 = new Square($V([xStart - bg_margin, yStart - bg_margin]), "wallhit", X * (squareSize + margin) + 2 * bg_margin);
         backdrop1.setType("wallhit");

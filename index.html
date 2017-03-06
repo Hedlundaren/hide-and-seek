@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html>
 	<head>
-		<title> Tell me where to go </title>
+		<title> Let me find the way </title>
 		<meta charset="utf-8">
 		<link rel="stylesheet" href="css/style.css">
+		<link rel="stylesheet" href="css/font-awesome-4.7.0/css/font-awesome.css">
 
 		<!-- External Libraries -->
 		<script src="js/external/pixi.js"></script>
@@ -22,12 +23,37 @@
 
 	</head>
 		<body>
-			<input class="ui-button" id="resetBtn" type="button" value="Reset" />
-			<input class="ui-button" id="autoMoveChecker" type="button" value="Auto">
-			<input class="ui-button" id="HUDToggle" type="button" value="HUD">
 
-			<input class="brain-button" id="stupid" type="button" value="Stupid">
-			<input class="brain-button" id="simple" type="button" value="Simple">
+
+			<div id="brain-symbol">
+				<i class="fa fa-graduation-cap fa-fw fa-2x brain-icon" ></i>
+			</div>
+
+
+
+			<button id="reset-div" class="ui-button button" type="button" value="Reset">
+				<i class="fa fa-step-backward fa-fw fa-1x agent-icon"></i>
+			</button>
+
+			<button id="play-div" class="ui-button button" type="button" value="Auto">
+				<i class="fa fa-play fa-fw fa-1x agent-icon"></i>
+			</button>
+
+			<button id="speed-down-div" class="ui-button button" type="button" value="SpeedDown">
+				<i class="fa fa-arrow-down fa-fw fa-1x agent-icon"></i>
+			</button>
+
+			<button id="speed-up-div" class="ui-button button" type="button" value="SpeedUp">
+				<i class="fa fa-arrow-up fa-fw fa-1x agent-icon"></i>
+			</button>
+
+			<button id="gauge-div" class="ui-button button" type="button" value="HUD">
+				<i class="fa fa-tachometer fa-fw fa-1x gauge-icon" type="button" value="Auto"></i>
+			</button>
+
+
+			<input class="brain-button button" id="stupid" type="button" value="Stupid">
+			<input class="brain-button button" id="simple" type="button" value="Simple">
 
 			<div id="HUD">
 				<div id="agent-pos"></div>
