@@ -11,6 +11,9 @@ var Renderer = (function () {
         this._container.appendChild(this._renderer.view);
         window.addEventListener('resize', this.onWindowResize, false);
     }
+    Renderer.prototype.setBackground = function (color) {
+        this._renderer.backgroundColor = color;
+    };
     Renderer.prototype.render = function () {
         this._renderer.render(Renderer._stage);
     };

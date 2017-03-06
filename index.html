@@ -3,7 +3,10 @@
 	<head>
 		<title> Let me find the way </title>
 		<meta charset="utf-8">
-		<link rel="stylesheet" href="css/style.css">
+		<link rel="stylesheet" href="css/main.css">
+		<link rel="stylesheet" href="css/hud.css">
+		<link rel="stylesheet" href="css/ui.css">
+		<link rel="stylesheet" href="css/brain.css">
 		<link rel="stylesheet" href="css/font-awesome-4.7.0/css/font-awesome.css">
 
 		<!-- External Libraries -->
@@ -24,13 +27,13 @@
 	</head>
 		<body>
 
-
 			<div id="brain-symbol">
-				<i class="fa fa-graduation-cap fa-fw fa-2x brain-icon" ></i>
+				<i class="fa fa-graduation-cap fa-fw fa-3x" ></i>
 			</div>
 
-
-
+			<!---------------------->
+			<!-- UI Round buttons -->
+			<!---------------------->
 			<button id="reset-div" class="ui-button button" type="button" value="Reset">
 				<i class="fa fa-step-backward fa-fw fa-1x agent-icon"></i>
 			</button>
@@ -48,15 +51,27 @@
 			</button>
 
 			<button id="gauge-div" class="ui-button button" type="button" value="HUD">
-				<i class="fa fa-tachometer fa-fw fa-1x gauge-icon" type="button" value="Auto"></i>
+				<i class="fa fa-tachometer fa-fw fa-1x gauge-icon"></i>
 			</button>
 
+			<button id="theme-div" class="ui-button button" type="button" value="Theme">
+				<i class="fa fa-lightbulb-o fa-fw fa-1x theme-icon"></i>
+			</button>
 
+			<!---------------------->
+			<!--- Brain buttons ---->
+			<!---------------------->
 			<input class="brain-button button" id="stupid" type="button" value="Stupid">
 			<input class="brain-button button" id="simple" type="button" value="Simple">
 
 			<div id="HUD">
-				<div id="agent-pos"></div>
+				<div id="agent-current-status">
+					<div class="agent-info-cell" id="agent-n-moves"></div>
+					<div class="agent-info-cell" id="agent-pos"></div>
+					<div class="agent-info-cell" id="agent-reward"></div>
+					<div class="agent-info-cell" id="agent-tot-reward"></div>
+				</div>
+
 				<div id="agent-history-holder">
 					<div id="agent-history" class="scroll"></div>
 				</div>

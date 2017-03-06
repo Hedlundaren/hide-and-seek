@@ -55,15 +55,15 @@ class Agent{
     this._position = Environment._squares[15]._center;
     this._velocity = $V([0, 0]);
     this._acceleration = $V([0, 0]);
-    this._mass = 0.6;
-    this._brainType = "stupid";
+    this._mass = 0.3;
+    this._brainType = "";
     this._totalReward = 0.0;
     this._sprite = new Sprite("textures/test.png");
     this._goalPosition = this._position;
     this._currentSquare = 15;
     this._numOfMoves = 0;
     this._iteration = 0;
-    this._travelTimer = new Stopwatch(1.07);
+    this._travelTimer = new Stopwatch(13);
     this._autoMove = false;
     this._nextMove = ""
     this._envSize = Math.sqrt(Environment._squares.length);
@@ -76,6 +76,8 @@ class Agent{
     window.addEventListener( 'keydown', this.onKeyDown, false );
     window.addEventListener( 'mousedown', this.onMouseDown, false );
 
+    // init
+    this.setBrain("simple");
 
   }
 
@@ -123,23 +125,23 @@ class Agent{
       switch (e.keyCode) {
         case 37:
         case 65:
-          this.moveLeft();
           this._nextMove = "left";
+          this.moveLeft();
           break;
         case 38:
         case 87:
-          this.moveUp();
           this._nextMove = "up";
+          this.moveUp();
           break;
         case 39:
         case 68:
-          this.moveRight();
           this._nextMove = "right";
+          this.moveRight();
           break;
         case 40:
         case 83:
-          this.moveDown();
           this._nextMove = "down";
+          this.moveDown();
           break;
         case 82:
           this.reset(15);
@@ -177,7 +179,6 @@ class Agent{
   private toggleAutoMove() : void{
     this._autoMove = !this._autoMove;
     var autoMoveChecker = document.getElementById('autoMoveChecker');
-    this.toggleCheckColor(autoMoveChecker, this._autoMove);
     $('.fa-play').toggleClass('fa-pause');
   }
 
@@ -292,7 +293,7 @@ class Agent{
       Environment._squares[i].setUtility(0);
     }
 
-    this.updateGridPosInfo();
+    this.updateCurrentStatusInfo();
     this.clearHistory();
 
   }
@@ -301,14 +302,6 @@ class Agent{
   // ========================================
   // ============= UI MANAGER ===============
   // ========================================
-  private toggleCheckColor(element, value){
-    if(value){
-      $(element).css("border-left", "10px solid RGBA(100,140,100,1)");
-    }else{
-      $(element).css("border-left", "10px solid RGBA(140,100,100,1)");
-    }
-  }
-
   private setBrainSelected(current_id, prev_id){
     var current = document.getElementById(current_id);
     var prev = document.getElementById(prev_id);
@@ -319,7 +312,6 @@ class Agent{
   private toggleHUD() : void{
     $("#HUD").fadeToggle(300, null);
     this._HUD = !this._HUD;
-    this.toggleCheckColor(document.getElementById("HUDToggle"), this._HUD);
   }
 
   private getInfoString() : string{
@@ -333,10 +325,23 @@ class Agent{
       '</p>'
   }
 
-  private updateGridPosInfo() : void{
+  private updateCurrentStatusInfo() : void{
+    var pos = this.getGridPos().elements;
+
+    var agentCurrentStatusDiv =   document.getElementById('agent-current-status');
+
+    var agentNMovesDiv =   document.getElementById('agent-n-moves');
     var agentPosDiv =   document.getElementById('agent-pos');
-    agentPosDiv.innerHTML = this.getInfoString();
-    agentPosDiv.className = Environment._squares[this._currentSquare].getType();
+    var agentRewardDiv =   document.getElementById('agent-reward');
+    var agentTotRewardDiv =   document.getElementById('agent-tot-reward');
+
+    agentNMovesDiv.innerHTML = '' + this._numOfMoves;
+    agentPosDiv.innerHTML = '| (' +  pos[0] + ',' + pos[1] + ')';
+    agentRewardDiv.innerHTML = '| ' + Math.round(Environment._squares[this._currentSquare].getReward() * 100) / 100;
+    agentTotRewardDiv.innerHTML = '| ' + Math.round(this._totalReward * 100) / 100;
+
+    //Change Color
+    agentCurrentStatusDiv.className = Environment._squares[this._currentSquare].getType();
   }
   private updateHistoryInfo() : void{
     var agentHistoryDiv = document.getElementById('agent-history');
@@ -348,7 +353,7 @@ class Agent{
   }
 
   private updateInfo() : void{
-    this.updateGridPosInfo();
+    this.updateCurrentStatusInfo();
     this.updateHistoryInfo();
   }
 
@@ -374,32 +379,40 @@ class Agent{
       var temp : number = this.getLeftId();
       this.innerWallCheck(temp, this._currentSquare);
     }
-    else
+    else{
+      this.bumpTowards("left");
       this.hitWall();
+    }
   }
   private moveUp() : void{
     if(this.outerWallCheck("up")){
       var temp : number = this.getUpId();
       this.innerWallCheck(temp, this._currentSquare);
     }
-    else
+    else{
       this.hitWall();
+      this.bumpTowards("up");
+    }
   }
   private moveRight() : void{
     if(this.outerWallCheck("right")){
       var temp : number = this.getRightId();
       this.innerWallCheck(temp, this._currentSquare);
     }
-    else
+    else{
       this.hitWall();
+      this.bumpTowards("right");
+    }
   }
   private moveDown() : void{
     if(this.outerWallCheck("down")){
       var temp : number = this.getDownId();
       this.innerWallCheck(temp, this._currentSquare);
     }
-    else
+    else{
       this.hitWall();
+      this.bumpTowards("down");
+    }
   }
   private setGoal(goal, prev) : void{
     this._travelTimer.reset(); // Start moving
@@ -423,10 +436,14 @@ class Agent{
     var agentHistoryDiv = document.getElementById('agent-history');
     agentHistoryDiv.innerHTML = '- wall -' + '<br>' + agentHistoryDiv.innerHTML;
   }
+
   private innerWallCheck(temp, prev) : void{
     if(Environment._squares[temp].getType() != "wall")
       this.setGoal(temp, prev);
-    else this.hitInnerWall(temp);
+    else{
+      this.hitInnerWall(temp);
+      this.bumpTowards(this._nextMove);
+    }
   }
   private getGridPos() : any{
     var size = Math.sqrt(Environment._squares.length)
@@ -443,11 +460,21 @@ class Agent{
     this._travelTimer.setStartTime(newTime);
   }
 
+  private bumpTowards(direction : string){
+    var bump = 30;
+    switch(direction){
+      case "left" : this._position.elements[0] -= bump; break;
+      case "up" : this._position.elements[1] -= bump;  break;
+      case "right" : this._position.elements[0] += bump; break;
+      case "down" : this._position.elements[1] += bump; break;
+    }
+  }
+
   private moveTowardsGoal(deltaTime) : void{
     // PID, the I is silent
     var kP : number = .0004;
     var kI : number = .0;
-    var kD : number = 0.9;
+    var kD : number = 0.5;
 
     var pos_error = this._goalPosition.add(this._position.multiply(-1));
     this._pos_integral = this._pos_integral.add(pos_error.multiply(deltaTime));

@@ -1,21 +1,21 @@
 var Square = (function () {
-    function Square(pos, type, size) {
+    function Square(pos, type, size, radius) {
         this._position = pos;
         this._center = this._position.add($V([size / 2, size / 2]));
         this._type = type;
         this._utility = 0.0;
         this._empty = true;
         this._graphics = new PIXI.Graphics();
-        this._graphics.beginFill(0x444444);
-        this._graphics.lineStyle(1, 0x555555);
-        this._graphics.drawRect(pos.elements[0], pos.elements[1], size, size);
+        this._graphics.beginFill(0xffffff);
+        this._graphics.lineStyle(1, 0xdddddd);
+        this._graphics.drawRoundedRect(pos.elements[0], pos.elements[1], size, size, radius);
         Renderer._stage.addChild(this._graphics);
     }
     Square.prototype.update = function (deltaTime) {
         if (this._graphics.alpha < 1 && this._empty)
-            this._graphics.alpha += 0.02;
+            this._graphics.alpha += 0.10;
         if (this._graphics.alpha > 1 && this._empty)
-            this._graphics.alpha -= 0.01;
+            this._graphics.alpha -= 0.10;
     };
     Square.prototype.getType = function () {
         return this._type;
@@ -46,45 +46,71 @@ var Square = (function () {
     };
     Square.prototype.enterSquare = function () {
         this._empty = false;
-        this._graphics.alpha = 1.1;
+        this._graphics.alpha = 1.03;
     };
     Square.prototype.leaveSquare = function () {
         this._empty = true;
     };
-    Square.prototype.setType = function (type) {
-        this._type = type;
-        switch (type) {
-            case "neutral":
-                this._graphics.tint = 16777215;
-                break;
-            case "start":
-                this._graphics.tint = 999999999;
-                break;
-            case "green":
-                this._graphics.tint = 57000000400;
-                break;
-            case "red":
-                this._graphics.tint = 170001003900;
-                this._graphics.tint = 15777215;
-                break;
-            case "orange":
-                this._graphics.tint = 15577215;
-                break;
-            case "black":
-                this._graphics.tint = 16777225;
-                break;
-            case "blue":
-                this._graphics.tint = 233202;
-                break;
-            case "wall":
-                this._graphics.tint = 16777225;
-                break;
-            case "wallhit":
-                this._graphics.tint = 170001003900;
-                break;
-            default:
-                this._graphics.tint = 16777215;
+    Square.prototype.setColor = function (type, theme) {
+        console.log(this._graphics);
+        if (theme == "night") {
+            switch (type) {
+                case "neutral":
+                    this._graphics.tint = 0xaaaaaa;
+                    break;
+                case "start":
+                    this._graphics.tint = 0xcccccc;
+                    break;
+                case "green":
+                    this._graphics.tint = 0x77bb77;
+                    break;
+                case "red":
+                    this._graphics.tint = 0xbb7777;
+                    break;
+                case "wall":
+                    this._graphics.tint = 0x666666;
+                    break;
+                case "wallhit":
+                    this._graphics.tint = 0xaa3333;
+                    break;
+                default:
+                    this._graphics.tint = 16777215;
+            }
         }
+        else if (theme == "day") {
+            switch (type) {
+                case "neutral":
+                    this._graphics.tint = 16777215;
+                    break;
+                case "start":
+                    this._graphics.tint = 999999999;
+                    break;
+                case "green":
+                    this._graphics.tint = 57000000400;
+                    break;
+                case "red":
+                    this._graphics.tint = 16177114;
+                    break;
+                case "black":
+                    this._graphics.tint = 16777225;
+                    break;
+                case "blue":
+                    this._graphics.tint = 16777215;
+                    break;
+                case "wall":
+                    this._graphics.tint = 0xaaaaaa;
+                    break;
+                case "wallhit":
+                    this._graphics.tint = 16777215;
+                    break;
+                default:
+                    this._graphics.tint = 16777215;
+            }
+        }
+    };
+    Square.prototype.setType = function (type, theme) {
+        this._type = type;
+        this.setColor(type, theme);
     };
     return Square;
 }());

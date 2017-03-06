@@ -9,10 +9,13 @@ class Renderer{
   static _stage = new PIXI.Container();
   constructor(){
     this._renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight,{backgroundColor : 0x222222});
-    //this._renderer.backgroundColor = 0xFFFFFF;
     this._container = document.getElementById('canvas');
     this._container.appendChild(this._renderer.view);
     window.addEventListener( 'resize', this.onWindowResize, false );
+  }
+
+  public setBackground(color) : void{
+    this._renderer.backgroundColor = color;
   }
 
   onWindowResize = (e) => {

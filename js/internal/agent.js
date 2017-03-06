@@ -53,23 +53,23 @@ var Agent = (function () {
                 switch (e.keyCode) {
                     case 37:
                     case 65:
-                        _this.moveLeft();
                         _this._nextMove = "left";
+                        _this.moveLeft();
                         break;
                     case 38:
                     case 87:
-                        _this.moveUp();
                         _this._nextMove = "up";
+                        _this.moveUp();
                         break;
                     case 39:
                     case 68:
-                        _this.moveRight();
                         _this._nextMove = "right";
+                        _this.moveRight();
                         break;
                     case 40:
                     case 83:
-                        _this.moveDown();
                         _this._nextMove = "down";
+                        _this.moveDown();
                         break;
                     case 82:
                         _this.reset(15);
@@ -103,15 +103,15 @@ var Agent = (function () {
         this._position = Environment._squares[15]._center;
         this._velocity = $V([0, 0]);
         this._acceleration = $V([0, 0]);
-        this._mass = 0.6;
-        this._brainType = "stupid";
+        this._mass = 0.3;
+        this._brainType = "";
         this._totalReward = 0.0;
         this._sprite = new Sprite("textures/test.png");
         this._goalPosition = this._position;
         this._currentSquare = 15;
         this._numOfMoves = 0;
         this._iteration = 0;
-        this._travelTimer = new Stopwatch(1.07);
+        this._travelTimer = new Stopwatch(13);
         this._autoMove = false;
         this._nextMove = "";
         this._envSize = Math.sqrt(Environment._squares.length);
@@ -121,11 +121,11 @@ var Agent = (function () {
         this.updateInfo();
         window.addEventListener('keydown', this.onKeyDown, false);
         window.addEventListener('mousedown', this.onMouseDown, false);
+        this.setBrain("simple");
     }
     Agent.prototype.toggleAutoMove = function () {
         this._autoMove = !this._autoMove;
         var autoMoveChecker = document.getElementById('autoMoveChecker');
-        this.toggleCheckColor(autoMoveChecker, this._autoMove);
         $('.fa-play').toggleClass('fa-pause');
     };
     Agent.prototype.setBrain = function (type) {
@@ -232,16 +232,8 @@ var Agent = (function () {
         for (var i = 0; i < Environment._squares.length; i++) {
             Environment._squares[i].setUtility(0);
         }
-        this.updateGridPosInfo();
+        this.updateCurrentStatusInfo();
         this.clearHistory();
-    };
-    Agent.prototype.toggleCheckColor = function (element, value) {
-        if (value) {
-            $(element).css("border-left", "10px solid RGBA(100,140,100,1)");
-        }
-        else {
-            $(element).css("border-left", "10px solid RGBA(140,100,100,1)");
-        }
     };
     Agent.prototype.setBrainSelected = function (current_id, prev_id) {
         var current = document.getElementById(current_id);
@@ -252,7 +244,6 @@ var Agent = (function () {
     Agent.prototype.toggleHUD = function () {
         $("#HUD").fadeToggle(300, null);
         this._HUD = !this._HUD;
-        this.toggleCheckColor(document.getElementById("HUDToggle"), this._HUD);
     };
     Agent.prototype.getInfoString = function () {
         var pos = this.getGridPos().elements;
@@ -263,10 +254,18 @@ var Agent = (function () {
             ' | ' + Math.round(this._totalReward * 100) / 100 +
             '</p>';
     };
-    Agent.prototype.updateGridPosInfo = function () {
+    Agent.prototype.updateCurrentStatusInfo = function () {
+        var pos = this.getGridPos().elements;
+        var agentCurrentStatusDiv = document.getElementById('agent-current-status');
+        var agentNMovesDiv = document.getElementById('agent-n-moves');
         var agentPosDiv = document.getElementById('agent-pos');
-        agentPosDiv.innerHTML = this.getInfoString();
-        agentPosDiv.className = Environment._squares[this._currentSquare].getType();
+        var agentRewardDiv = document.getElementById('agent-reward');
+        var agentTotRewardDiv = document.getElementById('agent-tot-reward');
+        agentNMovesDiv.innerHTML = '' + this._numOfMoves;
+        agentPosDiv.innerHTML = '| (' + pos[0] + ',' + pos[1] + ')';
+        agentRewardDiv.innerHTML = '| ' + Math.round(Environment._squares[this._currentSquare].getReward() * 100) / 100;
+        agentTotRewardDiv.innerHTML = '| ' + Math.round(this._totalReward * 100) / 100;
+        agentCurrentStatusDiv.className = Environment._squares[this._currentSquare].getType();
     };
     Agent.prototype.updateHistoryInfo = function () {
         var agentHistoryDiv = document.getElementById('agent-history');
@@ -276,7 +275,7 @@ var Agent = (function () {
         document.getElementById('agent-history').innerText = "";
     };
     Agent.prototype.updateInfo = function () {
-        this.updateGridPosInfo();
+        this.updateCurrentStatusInfo();
         this.updateHistoryInfo();
     };
     Agent.prototype.getLeftId = function () { return this._currentSquare - this._envSize; };
@@ -300,32 +299,40 @@ var Agent = (function () {
             var temp = this.getLeftId();
             this.innerWallCheck(temp, this._currentSquare);
         }
-        else
+        else {
+            this.bumpTowards("left");
             this.hitWall();
+        }
     };
     Agent.prototype.moveUp = function () {
         if (this.outerWallCheck("up")) {
             var temp = this.getUpId();
             this.innerWallCheck(temp, this._currentSquare);
         }
-        else
+        else {
             this.hitWall();
+            this.bumpTowards("up");
+        }
     };
     Agent.prototype.moveRight = function () {
         if (this.outerWallCheck("right")) {
             var temp = this.getRightId();
             this.innerWallCheck(temp, this._currentSquare);
         }
-        else
+        else {
             this.hitWall();
+            this.bumpTowards("right");
+        }
     };
     Agent.prototype.moveDown = function () {
         if (this.outerWallCheck("down")) {
             var temp = this.getDownId();
             this.innerWallCheck(temp, this._currentSquare);
         }
-        else
+        else {
             this.hitWall();
+            this.bumpTowards("down");
+        }
     };
     Agent.prototype.setGoal = function (goal, prev) {
         this._travelTimer.reset();
@@ -350,8 +357,10 @@ var Agent = (function () {
     Agent.prototype.innerWallCheck = function (temp, prev) {
         if (Environment._squares[temp].getType() != "wall")
             this.setGoal(temp, prev);
-        else
+        else {
             this.hitInnerWall(temp);
+            this.bumpTowards(this._nextMove);
+        }
     };
     Agent.prototype.getGridPos = function () {
         var size = Math.sqrt(Environment._squares.length);
@@ -363,10 +372,27 @@ var Agent = (function () {
         var newTime = this._travelTimer.getStartTime() * (1 / factor);
         this._travelTimer.setStartTime(newTime);
     };
+    Agent.prototype.bumpTowards = function (direction) {
+        var bump = 30;
+        switch (direction) {
+            case "left":
+                this._position.elements[0] -= bump;
+                break;
+            case "up":
+                this._position.elements[1] -= bump;
+                break;
+            case "right":
+                this._position.elements[0] += bump;
+                break;
+            case "down":
+                this._position.elements[1] += bump;
+                break;
+        }
+    };
     Agent.prototype.moveTowardsGoal = function (deltaTime) {
         var kP = .0004;
         var kI = .0;
-        var kD = 0.9;
+        var kD = 0.5;
         var pos_error = this._goalPosition.add(this._position.multiply(-1));
         this._pos_integral = this._pos_integral.add(pos_error.multiply(deltaTime));
         var pos_derivative = pos_error.add(this._prev_pos_error.multiply(-1)).multiply(1.0 / deltaTime);
