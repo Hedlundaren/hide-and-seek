@@ -15,3 +15,8 @@ canvas {
 .button{
 	cursor: default;
 }
+
+title{
+	background: #111111;
+	color: #cccccc;
+}

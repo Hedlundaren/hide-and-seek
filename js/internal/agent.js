@@ -1,24 +1,4 @@
 "use strict";
-var Stopwatch = (function () {
-    function Stopwatch(time) {
-        this._time = time;
-        this._startTime = time;
-        this._done = false;
-    }
-    Stopwatch.prototype.done = function () { return this._done; };
-    Stopwatch.prototype.reset = function () { this._time = this._startTime; this._done = false; };
-    Stopwatch.prototype.update = function (deltaTime) {
-        if (this._time > 0)
-            this._time -= deltaTime;
-        else
-            this._done = true;
-    };
-    Stopwatch.prototype.setStartTime = function (t) {
-        this._startTime = t;
-    };
-    Stopwatch.prototype.getStartTime = function () { return this._startTime; };
-    return Stopwatch;
-}());
 var Agent = (function () {
     function Agent() {
         var _this = this;
@@ -111,7 +91,7 @@ var Agent = (function () {
         this._currentSquare = 15;
         this._numOfMoves = 0;
         this._iteration = 0;
-        this._travelTimer = new Stopwatch(13);
+        this._travelTimer = new Stopwatch(0.5);
         this._autoMove = false;
         this._nextMove = "";
         this._envSize = Math.sqrt(Environment._squares.length);
@@ -234,12 +214,15 @@ var Agent = (function () {
         }
         this.updateCurrentStatusInfo();
         this.clearHistory();
+        Environment.setMap("standard");
     };
     Agent.prototype.setBrainSelected = function (current_id, prev_id) {
         var current = document.getElementById(current_id);
         var prev = document.getElementById(prev_id);
         $(prev).css("opacity", "0.5");
+        $(prev).css("color", " RGBA(120,120,120,1)");
         $(current).css("opacity", "1.0");
+        $(current).css("color", "white");
     };
     Agent.prototype.toggleHUD = function () {
         $("#HUD").fadeToggle(300, null);
@@ -262,9 +245,9 @@ var Agent = (function () {
         var agentRewardDiv = document.getElementById('agent-reward');
         var agentTotRewardDiv = document.getElementById('agent-tot-reward');
         agentNMovesDiv.innerHTML = '' + this._numOfMoves;
-        agentPosDiv.innerHTML = '| (' + pos[0] + ',' + pos[1] + ')';
-        agentRewardDiv.innerHTML = '| ' + Math.round(Environment._squares[this._currentSquare].getReward() * 100) / 100;
-        agentTotRewardDiv.innerHTML = '| ' + Math.round(this._totalReward * 100) / 100;
+        agentPosDiv.innerHTML = '(' + pos[0] + ',' + pos[1] + ')';
+        agentRewardDiv.innerHTML = '' + Math.round(Environment._squares[this._currentSquare].getReward() * 100) / 100;
+        agentTotRewardDiv.innerHTML = '' + Math.round(this._totalReward * 100) / 100;
         agentCurrentStatusDiv.className = Environment._squares[this._currentSquare].getType();
     };
     Agent.prototype.updateHistoryInfo = function () {
@@ -337,12 +320,15 @@ var Agent = (function () {
     Agent.prototype.setGoal = function (goal, prev) {
         this._travelTimer.reset();
         this._currentSquare = goal;
-        Environment._squares[goal].enterSquare();
-        Environment._squares[prev].leaveSquare();
         this._goalPosition = Environment._squares[this._currentSquare]._center;
+        Environment._squares[goal].enterSquare();
         this._totalReward += Environment._squares[this._currentSquare].getReward();
+        Environment._squares[prev].leaveSquare();
         this._numOfMoves++;
         this.updateInfo();
+        if (Environment._squares[goal].getType() != "start") {
+            Environment._squares[goal].setType("neutral", Environment._theme);
+        }
     };
     Agent.prototype.hitWall = function () {
         Environment._background.hitWall();

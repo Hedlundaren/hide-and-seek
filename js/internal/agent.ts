@@ -1,32 +1,11 @@
 /// <reference path="sprite.ts"/>
+/// <reference path="stopwatch.ts"/>
+
 declare var $V:any;
 declare var $ : any;
 
 "use strict";
-class Stopwatch{
 
-  private _time : number;
-  private _startTime : number;
-  private _done : boolean;
-
-  constructor(time : number){
-    this._time = time;
-    this._startTime = time;
-    this._done = false;
-  }
-  public done(){ return this._done;}
-  public reset(){ this._time = this._startTime; this._done = false;}
-  public update(deltaTime){
-    if(this._time > 0)
-      this._time -= deltaTime;
-    else this._done = true;
-  }
-
-  public setStartTime(t){
-    this._startTime = t;
-  }
-  public getStartTime(){ return this._startTime; }
-}
 
 class Agent{
 
@@ -63,7 +42,7 @@ class Agent{
     this._currentSquare = 15;
     this._numOfMoves = 0;
     this._iteration = 0;
-    this._travelTimer = new Stopwatch(13);
+    this._travelTimer = new Stopwatch(0.5);
     this._autoMove = false;
     this._nextMove = ""
     this._envSize = Math.sqrt(Environment._squares.length);
@@ -202,7 +181,6 @@ class Agent{
 
     this._nextMove = "";
     while(this._nextMove == ""){
-
       // Randomize direction
       var num = Math.floor(Math.random() * 4); // random 0 - 3
       switch(num){
@@ -236,7 +214,6 @@ class Agent{
       }
     }
   }
-
 
   // ========================================
   // ============= MAIN LOOP ================
@@ -295,9 +272,10 @@ class Agent{
 
     this.updateCurrentStatusInfo();
     this.clearHistory();
+    Environment.setMap("standard");
+
 
   }
-
 
   // ========================================
   // ============= UI MANAGER ===============
@@ -306,7 +284,10 @@ class Agent{
     var current = document.getElementById(current_id);
     var prev = document.getElementById(prev_id);
     $(prev).css("opacity", "0.5");
+    $(prev).css("color", " RGBA(120,120,120,1)");
+
     $(current).css("opacity", "1.0");
+    $(current).css("color", "white");
   }
 
   private toggleHUD() : void{
@@ -336,9 +317,9 @@ class Agent{
     var agentTotRewardDiv =   document.getElementById('agent-tot-reward');
 
     agentNMovesDiv.innerHTML = '' + this._numOfMoves;
-    agentPosDiv.innerHTML = '| (' +  pos[0] + ',' + pos[1] + ')';
-    agentRewardDiv.innerHTML = '| ' + Math.round(Environment._squares[this._currentSquare].getReward() * 100) / 100;
-    agentTotRewardDiv.innerHTML = '| ' + Math.round(this._totalReward * 100) / 100;
+    agentPosDiv.innerHTML = '(' +  pos[0] + ',' + pos[1] + ')';
+    agentRewardDiv.innerHTML = '' + Math.round(Environment._squares[this._currentSquare].getReward() * 100) / 100;
+    agentTotRewardDiv.innerHTML = '' + Math.round(this._totalReward * 100) / 100;
 
     //Change Color
     agentCurrentStatusDiv.className = Environment._squares[this._currentSquare].getType();
@@ -417,12 +398,16 @@ class Agent{
   private setGoal(goal, prev) : void{
     this._travelTimer.reset(); // Start moving
     this._currentSquare = goal;
-    Environment._squares[goal].enterSquare();
-    Environment._squares[prev].leaveSquare();
     this._goalPosition = Environment._squares[this._currentSquare]._center;
+    Environment._squares[goal].enterSquare();
     this._totalReward += Environment._squares[this._currentSquare].getReward();
+    Environment._squares[prev].leaveSquare();
     this._numOfMoves++;
     this.updateInfo();
+
+    if(Environment._squares[goal].getType() != "start"){
+      Environment._squares[goal].setType("neutral", Environment._theme);
+    }
   }
 
   private hitWall() : void{

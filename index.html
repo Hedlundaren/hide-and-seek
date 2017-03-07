@@ -1,19 +1,27 @@
 <!DOCTYPE HTML>
-<html>
+<html lang="en">
 	<head>
-		<title> Let me find the way </title>
 		<meta charset="utf-8">
+		<title> Let me find the way </title>
+
+		<!-- External Styles -->
+		<link rel="stylesheet" href="css/font-awesome-4.7.0/css/font-awesome.css">
+		<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+
+		<!-- Internal Styles -->
 		<link rel="stylesheet" href="css/main.css">
 		<link rel="stylesheet" href="css/hud.css">
 		<link rel="stylesheet" href="css/ui.css">
 		<link rel="stylesheet" href="css/brain.css">
-		<link rel="stylesheet" href="css/font-awesome-4.7.0/css/font-awesome.css">
 
 		<!-- External Libraries -->
 		<script src="js/external/pixi.js"></script>
 		<script src="js/external/math.min.js"></script>
 		<script src="js/external/sylvester.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+  	<script src="//code.jquery.com/jquery-1.12.4.js"></script>
+		<script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
 		<!-- Internal Libraries -->
 		<script src="js/internal/eventListeners.js"></script>
@@ -25,7 +33,11 @@
 		<script src="js/internal/main.js"></script>
 
 	</head>
+
 		<body>
+			<script>
+				$( document ).tooltip();
+			</script>
 
 			<div id="brain-symbol">
 				<i class="fa fa-graduation-cap fa-fw fa-3x" ></i>
@@ -34,27 +46,27 @@
 			<!---------------------->
 			<!-- UI Round buttons -->
 			<!---------------------->
-			<button id="reset-div" class="ui-button button" type="button" value="Reset">
+			<button id="reset-div" class="ui-button button" value="Reset" title="Reset agent (R)">
 				<i class="fa fa-step-backward fa-fw fa-1x agent-icon"></i>
 			</button>
 
-			<button id="play-div" class="ui-button button" type="button" value="Auto">
+			<button id="play-div" class="ui-button button" value="Auto" title="Auto move (space)">
 				<i class="fa fa-play fa-fw fa-1x agent-icon"></i>
 			</button>
 
-			<button id="speed-down-div" class="ui-button button" type="button" value="SpeedDown">
+			<button id="speed-down-div" class="ui-button button" value="SpeedDown" title="Speed down (,)">
 				<i class="fa fa-arrow-down fa-fw fa-1x agent-icon"></i>
 			</button>
 
-			<button id="speed-up-div" class="ui-button button" type="button" value="SpeedUp">
+			<button id="speed-up-div" class="ui-button button" value="SpeedUp" title="Speed up (.)">
 				<i class="fa fa-arrow-up fa-fw fa-1x agent-icon"></i>
 			</button>
 
-			<button id="gauge-div" class="ui-button button" type="button" value="HUD">
+			<button id="gauge-div" class="ui-button button" value="HUD" title="Head up display (H)">
 				<i class="fa fa-tachometer fa-fw fa-1x gauge-icon"></i>
 			</button>
 
-			<button id="theme-div" class="ui-button button" type="button" value="Theme">
+			<button id="theme-div" class="ui-button button" value="Theme" title="Dark/Light theme (T)">
 				<i class="fa fa-lightbulb-o fa-fw fa-1x theme-icon"></i>
 			</button>
 
@@ -64,8 +76,17 @@
 			<input class="brain-button button" id="stupid" type="button" value="Stupid">
 			<input class="brain-button button" id="simple" type="button" value="Simple">
 
+
+			<!---------------------->
+			<!---      HUD      ---->
+			<!---------------------->
 			<div id="HUD">
 				<div id="agent-current-status">
+					<div class="agent-info-cell description">moves</div>
+					<div class="agent-info-cell description">position</div>
+					<div class="agent-info-cell description">reward</div>
+					<div class="agent-info-cell description">total reward</div>
+
 					<div class="agent-info-cell" id="agent-n-moves"></div>
 					<div class="agent-info-cell" id="agent-pos"></div>
 					<div class="agent-info-cell" id="agent-reward"></div>

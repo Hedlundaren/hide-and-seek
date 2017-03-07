@@ -18,8 +18,7 @@ var Main = (function () {
                 }
             }
         };
-        this._theme = "night";
-        this._environment = new Environment("night");
+        this._environment = new Environment();
         this._renderer = new Renderer();
         window.addEventListener('mousedown', this.onMouseDown, false);
         window.addEventListener('keydown', this.onKeyDown, false);
@@ -36,25 +35,23 @@ var Main = (function () {
         requestAnimationFrame(function () { return _this.update(); });
     };
     Main.prototype.toggleTheme = function () {
-        if (this._theme == "night")
-            this._theme = "day";
-        else if (this._theme == "day")
-            this._theme = "night";
-        if (this._theme == "night") {
+        if (Environment._theme == "night")
+            Environment._theme = "day";
+        else if (Environment._theme == "day")
+            Environment._theme = "night";
+        for (var i = 0; i < Environment._squares.length; i++) {
+            Environment._squares[i].setType(Environment._squares[i].getType(), Environment._theme);
+        }
+        Environment._background.setType(Environment._background.getType(), Environment._theme);
+        Environment._backdrop1.setType(Environment._backdrop1.getType(), Environment._theme);
+        Environment._backdrop2.setType(Environment._backdrop2.getType(), Environment._theme);
+        if (Environment._theme == "night") {
             this._renderer.setBackground("0x222222");
             $("#HUD").css("opacity", "0.7");
-            for (var i = 0; i < Environment._squares.length; i++) {
-                Environment._squares[i].setType(Environment._squares[i].getType(), this._theme);
-            }
-            Environment._background.setType(Environment._background.getType(), this._theme);
         }
         else {
             this._renderer.setBackground("0xFFFFFF");
             $("#HUD").css("opacity", "1.0");
-            for (var i = 0; i < Environment._squares.length; i++) {
-                Environment._squares[i].setType(Environment._squares[i].getType(), this._theme);
-            }
-            Environment._background.setType(Environment._background.getType(), this._theme);
         }
     };
     return Main;

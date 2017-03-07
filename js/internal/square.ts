@@ -25,10 +25,10 @@ class Square{
 
   public update(deltaTime){
     if(this._graphics.alpha < 1 && this._empty)
-      this._graphics.alpha += 0.10;
+      this._graphics.alpha += 0.05;
 
       if(this._graphics.alpha > 1 && this._empty)
-        this._graphics.alpha -= 0.10;
+        this._graphics.alpha -= 0.05;
   }
 
   public getType(){
@@ -64,7 +64,7 @@ class Square{
 
   public enterSquare(){
     this._empty = false;
-    this._graphics.alpha = 1.03;
+    this._graphics.alpha = 1.05;
   }
 
   public leaveSquare(){
@@ -92,7 +92,7 @@ class Square{
           this._graphics.tint = 0x666666;
           break;
         case "wallhit":
-          this._graphics.tint = 0xaa3333;
+          this._graphics.tint = 0xdd5555;
           break;
 
         default:
@@ -105,13 +105,13 @@ class Square{
         this._graphics.tint = 16777215;
           break;
         case "start":
-          this._graphics.tint = 999999999;
+          this._graphics.tint = 0xdddddd;
           break;
         case "green":
-          this._graphics.tint = 57000000400;
+          this._graphics.tint = 0x99dd99;
           break;
         case "red":
-          this._graphics.tint = 16177114;
+          this._graphics.tint = 0xdd9999;
           break
         case "black":
           this._graphics.tint = 16777225;
@@ -123,7 +123,7 @@ class Square{
           this._graphics.tint = 0xaaaaaa;
           break;
         case "wallhit":
-          this._graphics.tint = 16777215;
+          this._graphics.tint = 0xff9999;
           break;
 
         default:
