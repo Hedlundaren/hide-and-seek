@@ -4,18 +4,22 @@
 class Square{
 
   public _position : any;
+  public _id : number;
   public _center : any;
   private _type : string;
   private _utility : number;
+  private _envSize : number;
   private _empty : boolean;
   private _graphics : any;
 
-  constructor(pos, type, size, radius){
+  constructor(pos, id, type, size, radius){
     this._position = pos;
+    this._id = id;
     this._center = this._position.add($V([size/2,size/2]));
     this._type = type;
-    this._utility = 0.0;
     this._empty = true;
+    this._utility = 0.0;
+    this._envSize = Math.sqrt(Environment._squares.length);
     this._graphics = new PIXI.Graphics();
     this._graphics.beginFill(0xffffff);
     this._graphics.lineStyle(1, 0xdddddd);
@@ -29,6 +33,10 @@ class Square{
 
       if(this._graphics.alpha > 1 && this._empty)
         this._graphics.alpha -= 0.05;
+  }
+
+  public getId(){
+    return this._id;
   }
 
   public getType(){
@@ -57,6 +65,16 @@ class Square{
         return 0.0;
     }
   }
+
+  public getLeftId() : number{ return this._id - this._envSize; };
+  public getUpId() : number{ return this._id - 1; };
+  public getRightId() : number{ return this._id + this._envSize; };
+  public getDownId() : number{ return this._id + 1; };
+
+  // public getLeftSquare() : Square{ return Environment._squares[this.getLeftId()];};
+  // public getUpSquare() : Square{ return Environment._squares[this.getUpId()]; };
+  // public getRightSquare() : Square{ return Environment._squares[this.getRightId()]; };
+  // public getDownSquare() : Square{return Environment._squares[this.getLeftId()]; };
 
   public hitWall(){
     this._graphics.alpha = 0.1;

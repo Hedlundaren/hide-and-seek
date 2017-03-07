@@ -41,16 +41,16 @@ var Environment = (function () {
         var bg_margin = 20;
         var backdrop_radius = 5;
         var square_radius = 1;
-        Environment._backdrop1 = new Square($V([xStart - bg_margin, yStart - bg_margin]), "wallhit", X * (squareSize + margin) + 2 * bg_margin, backdrop_radius);
+        Environment._backdrop1 = new Square($V([xStart - bg_margin, yStart - bg_margin]), -1, "wallhit", X * (squareSize + margin) + 2 * bg_margin, backdrop_radius);
         Environment._backdrop1.setType("wallhit", Environment._theme);
-        Environment._background = new Square($V([xStart - bg_margin, yStart - bg_margin]), "wall", X * (squareSize + margin) + 2 * bg_margin, backdrop_radius);
+        Environment._background = new Square($V([xStart - bg_margin, yStart - bg_margin]), -1, "wall", X * (squareSize + margin) + 2 * bg_margin, backdrop_radius);
         Environment._background.setType("wall", Environment._theme);
-        Environment._backdrop2 = new Square($V([xStart, yStart]), "wallhit", X * (squareSize), backdrop_radius);
+        Environment._backdrop2 = new Square($V([xStart, yStart]), -1, "wallhit", X * (squareSize), backdrop_radius);
         Environment._backdrop2.setType("wallhit", Environment._theme);
         for (var i = 0; i < X; i++) {
             for (var j = 0; j < Y; j++) {
                 Environment._squares.push(new Square($V([xStart + (squareSize + margin) * i,
-                    yStart + (squareSize + margin) * j]), "neutral", squareSize, square_radius));
+                    yStart + (squareSize + margin) * j]), j + i * X, "neutral", squareSize, square_radius));
                 Environment._squares[j + X * i].setType("neutral", Environment._theme);
             }
         }

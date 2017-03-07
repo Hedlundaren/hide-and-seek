@@ -1,10 +1,12 @@
 var Square = (function () {
-    function Square(pos, type, size, radius) {
+    function Square(pos, id, type, size, radius) {
         this._position = pos;
+        this._id = id;
         this._center = this._position.add($V([size / 2, size / 2]));
         this._type = type;
-        this._utility = 0.0;
         this._empty = true;
+        this._utility = 0.0;
+        this._envSize = Math.sqrt(Environment._squares.length);
         this._graphics = new PIXI.Graphics();
         this._graphics.beginFill(0xffffff);
         this._graphics.lineStyle(1, 0xdddddd);
@@ -16,6 +18,9 @@ var Square = (function () {
             this._graphics.alpha += 0.05;
         if (this._graphics.alpha > 1 && this._empty)
             this._graphics.alpha -= 0.05;
+    };
+    Square.prototype.getId = function () {
+        return this._id;
     };
     Square.prototype.getType = function () {
         return this._type;
@@ -41,6 +46,14 @@ var Square = (function () {
                 return 0.0;
         }
     };
+    Square.prototype.getLeftId = function () { return this._id - this._envSize; };
+    ;
+    Square.prototype.getUpId = function () { return this._id - 1; };
+    ;
+    Square.prototype.getRightId = function () { return this._id + this._envSize; };
+    ;
+    Square.prototype.getDownId = function () { return this._id + 1; };
+    ;
     Square.prototype.hitWall = function () {
         this._graphics.alpha = 0.1;
     };

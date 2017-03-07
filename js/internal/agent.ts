@@ -18,7 +18,7 @@ class Agent{
   private _brain : Brain;
   private _totalReward : number;
   private _sprite : any;
-  private _currentSquare : number;
+  public _currentSquare : number;
   private _iteration : number;
   private _numOfMoves : number;
   private _travelTimer : Stopwatch;
@@ -94,6 +94,10 @@ class Agent{
         this._brain.setBrain("simple");
       break;
 
+      case "Forward":
+        this._brain.setBrain("forward");
+      break;
+
     default:
   }
 
@@ -145,7 +149,7 @@ class Agent{
           this._brain.setBrain("simple");
           break;
         case 51:
-          this._brain.setBrain("smart");
+          this._brain.setBrain("forward");
           break;
         default:
       }
@@ -184,13 +188,7 @@ class Agent{
       if(this._autoMove){
 
         // think...
-        switch(this._brain.getBrain()){
-          case "stupid" : this._brain.thinkStupid(); break;
-          case "simple" : this._brain.thinkSimple(); break;
-          case "average" :  break;
-          case "valueIteration" :  break;
-          case "policyIteration" :  break;
-        }
+        this._brain.think();
 
         // move...
         switch(this._nextMove){

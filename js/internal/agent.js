@@ -25,6 +25,9 @@ var Agent = (function () {
                 case "Simple":
                     _this._brain.setBrain("simple");
                     break;
+                case "Forward":
+                    _this._brain.setBrain("forward");
+                    break;
                 default:
             }
         };
@@ -74,7 +77,7 @@ var Agent = (function () {
                         _this._brain.setBrain("simple");
                         break;
                     case 51:
-                        _this._brain.setBrain("smart");
+                        _this._brain.setBrain("forward");
                         break;
                     default:
                 }
@@ -118,17 +121,7 @@ var Agent = (function () {
         this._travelTimer.update(deltaTime);
         if (this._travelTimer.done()) {
             if (this._autoMove) {
-                switch (this._brain.getBrain()) {
-                    case "stupid":
-                        this._brain.thinkStupid();
-                        break;
-                    case "simple":
-                        this._brain.thinkSimple();
-                        break;
-                    case "average": break;
-                    case "valueIteration": break;
-                    case "policyIteration": break;
-                }
+                this._brain.think();
                 switch (this._nextMove) {
                     case "left":
                         this.moveLeft();
