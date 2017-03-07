@@ -15,7 +15,7 @@ class Agent{
   private _velocity : any;
   private _acceleration : any;
   private _mass : number;
-  private _brainType : string;
+  private _brain : Brain;
   private _totalReward : number;
   private _sprite : any;
   private _currentSquare : number;
@@ -23,7 +23,7 @@ class Agent{
   private _numOfMoves : number;
   private _travelTimer : Stopwatch;
   private _autoMove : boolean;
-  private _nextMove : string;
+  public _nextMove : string;
   private _envSize : number;
   private _HUD : boolean;
 
@@ -35,7 +35,7 @@ class Agent{
     this._velocity = $V([0, 0]);
     this._acceleration = $V([0, 0]);
     this._mass = 0.3;
-    this._brainType = "";
+    this._brain = new Brain(this, "simple");
     this._totalReward = 0.0;
     this._sprite = new Sprite("textures/test.png");
     this._goalPosition = this._position;
@@ -56,7 +56,7 @@ class Agent{
     window.addEventListener( 'mousedown', this.onMouseDown, false );
 
     // init
-    this.setBrain("simple");
+    this._brain.setBrain("simple");
 
   }
 
@@ -87,11 +87,11 @@ class Agent{
       break;
 
       case "Stupid":
-        this.setBrain("stupid");
+        this._brain.setBrain("stupid");
         break;
 
       case "Simple":
-        this.setBrain("simple");
+        this._brain.setBrain("simple");
       break;
 
     default:
@@ -139,13 +139,13 @@ class Agent{
           this.multiplySpeed(1.2);
           break;
         case 49:
-          this.setBrain("stupid");
+          this._brain.setBrain("stupid");
           break;
         case 50:
-          this.setBrain("simple");
+          this._brain.setBrain("simple");
           break;
         case 51:
-          this.setBrain("smart");
+          this._brain.setBrain("smart");
           break;
         default:
       }
@@ -155,65 +155,21 @@ class Agent{
   // ========================================
   // =============== BRAIN ==================
   // ========================================
+
+  public setMove(direction : string){
+    this._nextMove = direction;
+  }
+
+  public getMove(){
+    return this._nextMove;
+  }
+
   private toggleAutoMove() : void{
     this._autoMove = !this._autoMove;
     var autoMoveChecker = document.getElementById('autoMoveChecker');
     $('.fa-play').toggleClass('fa-pause');
   }
 
-  private setBrain(type : string) : void{
-    this.setBrainSelected(type, this._brainType);
-    this._brainType = type;
-  }
-
-  private thinkStupid() : void{
-    // Randomize direction
-    var num = Math.floor(Math.random() * 4); // random 0 - 3
-    switch(num){
-      case 0 : this._nextMove = "left"; break;
-      case 1 : this._nextMove = "up"; break;
-      case 2 : this._nextMove = "right"; break;
-      case 3 : this._nextMove = "down"; break;
-    }
-  }
-
-  private thinkSimple() : void{
-
-    this._nextMove = "";
-    while(this._nextMove == ""){
-      // Randomize direction
-      var num = Math.floor(Math.random() * 4); // random 0 - 3
-      switch(num){
-        case 0 : // left
-          if(this.outerWallCheck("left")){
-            var type = Environment._squares[this.getLeftId()].getType();
-            if(type != "wall" && type != "red") this._nextMove = "left";
-          }
-          break;
-
-        case 1 : // up
-          if(this.outerWallCheck("up")){
-            var type = Environment._squares[this.getUpId()].getType();
-            if(type != "wall" && type != "red") this._nextMove = "up";
-          }
-          break;
-
-        case 2 : // right
-          if(this.outerWallCheck("right")){
-            var type = Environment._squares[this.getRightId()].getType();
-            if(type != "wall" && type != "red") this._nextMove = "right";
-          }
-          break;
-
-        case 3 : // down
-          if(this.outerWallCheck("down")){
-            var type = Environment._squares[this.getDownId()].getType();
-            if(type != "wall" && type != "red") this._nextMove = "down";
-          }
-          break;
-      }
-    }
-  }
 
   // ========================================
   // ============= MAIN LOOP ================
@@ -227,18 +183,16 @@ class Agent{
 
       if(this._autoMove){
 
-        // calculating path...
-        // ...
-
-        switch(this._brainType){
-          case "stupid" : this.thinkStupid(); break;
-          case "simple" : this.thinkSimple(); break;
+        // think...
+        switch(this._brain.getBrain()){
+          case "stupid" : this._brain.thinkStupid(); break;
+          case "simple" : this._brain.thinkSimple(); break;
           case "average" :  break;
           case "valueIteration" :  break;
           case "policyIteration" :  break;
         }
-        // ...
 
+        // move...
         switch(this._nextMove){
           case "left" : this.moveLeft(); break;
           case "up" : this.moveUp(); break;
@@ -280,7 +234,7 @@ class Agent{
   // ========================================
   // ============= UI MANAGER ===============
   // ========================================
-  private setBrainSelected(current_id, prev_id){
+  public setBrainSelected(current_id, prev_id){
     var current = document.getElementById(current_id);
     var prev = document.getElementById(prev_id);
     $(prev).css("opacity", "0.5");
@@ -341,12 +295,12 @@ class Agent{
   // ========================================
   // =============== SENSORS ================
   // ========================================
-  private getLeftId() : number{ return this._currentSquare - this._envSize; };
-  private getUpId() : number{ return this._currentSquare - 1; };
-  private getRightId() : number{ return this._currentSquare + this._envSize; };
-  private getDownId() : number{ return this._currentSquare + 1; };
+  public getLeftId() : number{ return this._currentSquare - this._envSize; };
+  public getUpId() : number{ return this._currentSquare - 1; };
+  public getRightId() : number{ return this._currentSquare + this._envSize; };
+  public getDownId() : number{ return this._currentSquare + 1; };
 
-  private outerWallCheck(direction : string) : boolean{
+  public outerWallCheck(direction : string) : boolean{
     switch(direction){
       case "left" : return this._currentSquare > this._envSize-1;
       case "up" : return this._currentSquare % this._envSize != 0;

@@ -52,7 +52,6 @@ var Square = (function () {
         this._empty = true;
     };
     Square.prototype.setColor = function (type, theme) {
-        console.log(this._graphics);
         if (theme == "night") {
             switch (type) {
                 case "neutral":

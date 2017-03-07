@@ -20,10 +20,10 @@ var Agent = (function () {
                     _this.toggleHUD();
                     break;
                 case "Stupid":
-                    _this.setBrain("stupid");
+                    _this._brain.setBrain("stupid");
                     break;
                 case "Simple":
-                    _this.setBrain("simple");
+                    _this._brain.setBrain("simple");
                     break;
                 default:
             }
@@ -68,13 +68,13 @@ var Agent = (function () {
                         _this.multiplySpeed(1.2);
                         break;
                     case 49:
-                        _this.setBrain("stupid");
+                        _this._brain.setBrain("stupid");
                         break;
                     case 50:
-                        _this.setBrain("simple");
+                        _this._brain.setBrain("simple");
                         break;
                     case 51:
-                        _this.setBrain("smart");
+                        _this._brain.setBrain("smart");
                         break;
                     default:
                 }
@@ -84,7 +84,7 @@ var Agent = (function () {
         this._velocity = $V([0, 0]);
         this._acceleration = $V([0, 0]);
         this._mass = 0.3;
-        this._brainType = "";
+        this._brain = new Brain(this, "simple");
         this._totalReward = 0.0;
         this._sprite = new Sprite("textures/test.png");
         this._goalPosition = this._position;
@@ -101,80 +101,29 @@ var Agent = (function () {
         this.updateInfo();
         window.addEventListener('keydown', this.onKeyDown, false);
         window.addEventListener('mousedown', this.onMouseDown, false);
-        this.setBrain("simple");
+        this._brain.setBrain("simple");
     }
+    Agent.prototype.setMove = function (direction) {
+        this._nextMove = direction;
+    };
+    Agent.prototype.getMove = function () {
+        return this._nextMove;
+    };
     Agent.prototype.toggleAutoMove = function () {
         this._autoMove = !this._autoMove;
         var autoMoveChecker = document.getElementById('autoMoveChecker');
         $('.fa-play').toggleClass('fa-pause');
     };
-    Agent.prototype.setBrain = function (type) {
-        this.setBrainSelected(type, this._brainType);
-        this._brainType = type;
-    };
-    Agent.prototype.thinkStupid = function () {
-        var num = Math.floor(Math.random() * 4);
-        switch (num) {
-            case 0:
-                this._nextMove = "left";
-                break;
-            case 1:
-                this._nextMove = "up";
-                break;
-            case 2:
-                this._nextMove = "right";
-                break;
-            case 3:
-                this._nextMove = "down";
-                break;
-        }
-    };
-    Agent.prototype.thinkSimple = function () {
-        this._nextMove = "";
-        while (this._nextMove == "") {
-            var num = Math.floor(Math.random() * 4);
-            switch (num) {
-                case 0:
-                    if (this.outerWallCheck("left")) {
-                        var type = Environment._squares[this.getLeftId()].getType();
-                        if (type != "wall" && type != "red")
-                            this._nextMove = "left";
-                    }
-                    break;
-                case 1:
-                    if (this.outerWallCheck("up")) {
-                        var type = Environment._squares[this.getUpId()].getType();
-                        if (type != "wall" && type != "red")
-                            this._nextMove = "up";
-                    }
-                    break;
-                case 2:
-                    if (this.outerWallCheck("right")) {
-                        var type = Environment._squares[this.getRightId()].getType();
-                        if (type != "wall" && type != "red")
-                            this._nextMove = "right";
-                    }
-                    break;
-                case 3:
-                    if (this.outerWallCheck("down")) {
-                        var type = Environment._squares[this.getDownId()].getType();
-                        if (type != "wall" && type != "red")
-                            this._nextMove = "down";
-                    }
-                    break;
-            }
-        }
-    };
     Agent.prototype.update = function (deltaTime) {
         this._travelTimer.update(deltaTime);
         if (this._travelTimer.done()) {
             if (this._autoMove) {
-                switch (this._brainType) {
+                switch (this._brain.getBrain()) {
                     case "stupid":
-                        this.thinkStupid();
+                        this._brain.thinkStupid();
                         break;
                     case "simple":
-                        this.thinkSimple();
+                        this._brain.thinkSimple();
                         break;
                     case "average": break;
                     case "valueIteration": break;

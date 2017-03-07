@@ -72,7 +72,6 @@ class Square{
   }
 
   public setColor(type : string, theme : string) : void{
-    console.log(this._graphics);
     if(theme == "night"){
       switch (type) {
         case "neutral":
