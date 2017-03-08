@@ -10,11 +10,8 @@ var Agent = (function () {
                 case "Auto":
                     _this.toggleAutoMove();
                     break;
-                case "SpeedUp":
-                    _this.multiplySpeed(1.2);
-                    break;
-                case "SpeedDown":
-                    _this.multiplySpeed(0.8);
+                case "Speed":
+                    _this.toggleSpeed();
                     break;
                 case "HUD":
                     _this.toggleHUD();
@@ -30,6 +27,12 @@ var Agent = (function () {
                     break;
                 case "Careful":
                     _this._brain.setBrain("careful");
+                    break;
+                case "Value":
+                    _this._brain.setBrain("value");
+                    break;
+                case "Policy":
+                    _this._brain.setBrain("policy");
                     break;
                 default:
             }
@@ -68,10 +71,10 @@ var Agent = (function () {
                         _this.toggleAutoMove();
                         break;
                     case 188:
-                        _this.multiplySpeed(0.8);
+                        _this.speedDown();
                         break;
                     case 190:
-                        _this.multiplySpeed(1.2);
+                        _this.speedUp();
                         break;
                     case 49:
                         _this._brain.setBrain("stupid");
@@ -82,6 +85,15 @@ var Agent = (function () {
                     case 51:
                         _this._brain.setBrain("forward");
                         break;
+                    case 52:
+                        _this._brain.setBrain("careful");
+                        break;
+                    case 53:
+                        _this._brain.setBrain("value");
+                        break;
+                    case 54:
+                        _this._brain.setBrain("policy");
+                        break;
                     default:
                 }
             }
@@ -90,6 +102,7 @@ var Agent = (function () {
         this._velocity = $V([0, 0]);
         this._acceleration = $V([0, 0]);
         this._mass = 0.3;
+        this._fast = true;
         this._brain = new Brain(this, "forward");
         this._totalReward = 0.0;
         this._sprite = new Sprite("textures/test.png");
@@ -107,6 +120,7 @@ var Agent = (function () {
         window.addEventListener('keydown', this.onKeyDown, false);
         window.addEventListener('mousedown', this.onMouseDown, false);
         this._brain.setBrain("forward");
+        $('.fa-rocket').toggleClass('fa-wheelchair');
     }
     Agent.prototype.setMove = function (direction) {
         this._nextMove = direction;
@@ -158,18 +172,28 @@ var Agent = (function () {
         }
         this.updateCurrentStatusInfo();
         this.clearHistory();
-        Environment.setMap("standard");
+        Environment.setMap(Environment._mapType);
     };
     Agent.prototype.setBrainSelected = function (current_id, prev_id) {
         var current = document.getElementById(current_id);
         var prev = document.getElementById(prev_id);
         $(prev).css("opacity", "0.5");
         $(prev).css("color", " RGBA(120,120,120,1)");
+        $(prev).css("box-shadow", "0px 0px 0px #888888");
         $(current).css("opacity", "1.0");
-        $(current).css("color", "white");
+        $(current).css("color", "RGBA(200,200,200,1)");
+        $(current).css("box-shadow", "3px 2px 3px RGBA(100,100,100,0.5)");
     };
     Agent.prototype.toggleHUD = function () {
-        $("#HUD").fadeToggle(300, null);
+        var fadeSpeed = 300;
+        if (this._HUD) {
+            $("#agent-current-status").fadeTo(fadeSpeed, 0.0);
+            $("#agent-history-holder").fadeTo(fadeSpeed, 0.0);
+        }
+        else {
+            $("#agent-current-status").fadeTo(fadeSpeed, 1);
+            $("#agent-history-holder").fadeTo(fadeSpeed, 1);
+        }
         this._HUD = !this._HUD;
     };
     Agent.prototype.getInfoString = function () {
@@ -301,6 +325,25 @@ var Agent = (function () {
     Agent.prototype.multiplySpeed = function (factor) {
         var newTime = this._travelTimer.getStartTime() * (1 / factor);
         this._travelTimer.setStartTime(newTime);
+    };
+    Agent.prototype.toggleSpeed = function () {
+        $('.fa-rocket').toggleClass('fa-wheelchair');
+        this._fast = !this._fast;
+        if (this._fast)
+            this.speedUp();
+        else
+            this.speedDown();
+    };
+    Agent.prototype.speedUp = function () {
+        this.setSpeed(0.10);
+        this._fast = true;
+    };
+    Agent.prototype.speedDown = function () {
+        this.setSpeed(10);
+        this._fast = false;
+    };
+    Agent.prototype.setSpeed = function (speed) {
+        this._travelTimer.setStartTime(speed);
     };
     Agent.prototype.bumpTowards = function (direction) {
         var bump = 30;

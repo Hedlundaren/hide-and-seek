@@ -46,12 +46,16 @@ var Main = (function () {
         Environment._backdrop1.setType(Environment._backdrop1.getType(), Environment._theme);
         Environment._backdrop2.setType(Environment._backdrop2.getType(), Environment._theme);
         if (Environment._theme == "night") {
-            this._renderer.setBackground("0x222222");
             $("#HUD").css("opacity", "0.7");
+            $("#all-holder").css("background", "RGBA(70,60,70,0.15)");
+            $("body").css("background", "RGBA(20, 20, 20,1.0)");
+            this._renderer.setBackground("0x222222");
         }
         else {
             this._renderer.setBackground("0xFFFFFF");
             $("#HUD").css("opacity", "1.0");
+            $("#all-holder").css("background", "RGBA(255,255,255,1.0)");
+            $("body").css("background", "RGBA(200, 200, 200,1.0)");
         }
     };
     return Main;

@@ -1,8 +1,10 @@
 var Environment = (function () {
     function Environment() {
         Environment._theme = "night";
+        Environment._mapType = "random";
         Environment._sideLength = 6;
-        this.createGrid(Environment._sideLength, Environment._sideLength, 427);
+        Environment._start = 15;
+        this.createGrid(Environment._sideLength, Environment._sideLength, 500);
         this._agent = new Agent();
     }
     Environment.prototype.update = function (deltaTime) {
@@ -14,7 +16,7 @@ var Environment = (function () {
     };
     Environment.setMap = function (type) {
         if (type == "standard") {
-            Environment._squares[15].setType("start", Environment._theme);
+            Environment._squares[Environment._start].setType("start", Environment._theme);
             Environment._squares[0].setType("green", Environment._theme);
             Environment._squares[12].setType("green", Environment._theme);
             Environment._squares[30].setType("green", Environment._theme);
@@ -33,27 +35,30 @@ var Environment = (function () {
             Environment._squares[22].setType("wall", Environment._theme);
         }
         else if (type == "random") {
-            Environment._squares[15].setType("start", Environment._theme);
+            Environment._squares[Environment._start].setType("start", Environment._theme);
             for (var i = 0; i < Environment._squares.length; i++) {
-                var num = Math.floor(Math.random() * 4);
-                switch (num) {
-                    case 0:
-                        Environment._squares[i].setType("green", Environment._theme);
-                        break;
-                    case 1:
-                        Environment._squares[i].setType("red", Environment._theme);
-                        break;
-                    case 2:
-                        Environment._squares[i].setType("wall", Environment._theme);
-                        break;
+                if (i != Environment._start) {
+                    var num = Math.floor(Math.random() * 36);
+                    switch (true) {
+                        case num < 4:
+                            Environment._squares[i].setType("wall", Environment._theme);
+                            break;
+                        case (num > 3 && num < 9):
+                            Environment._squares[i].setType("red", Environment._theme);
+                            break;
+                        case (num > 8 && num < 15):
+                            Environment._squares[i].setType("green", Environment._theme);
+                            break;
+                        default: Environment._squares[i].setType("neutral", Environment._theme);
+                    }
                 }
             }
         }
     };
     Environment.prototype.createGrid = function (X, Y, envSize) {
         Environment._squares = [];
-        var xStart = 160;
-        var yStart = 100;
+        var xStart = 20;
+        var yStart = 20;
         var margin = 1;
         var squareSize = envSize / X - margin;
         var bg_margin = 20;
@@ -72,7 +77,7 @@ var Environment = (function () {
                 Environment._squares[j + X * i].setType("neutral", Environment._theme);
             }
         }
-        Environment.setMap("standard");
+        Environment.setMap("random");
     };
     return Environment;
 }());

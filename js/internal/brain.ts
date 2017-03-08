@@ -117,6 +117,8 @@ class Brain{
       case "simple" : this.thinkSimple(); break;
       case "forward" : this.thinkForward(500); this._avoid_red = false; break;
       case "careful" : this.thinkForward(300); this._avoid_red = true; break;
+      case "value" : this.thinkStupid(); break;
+      case "policy" : this.thinkStupid(); break;
     }
   }
 

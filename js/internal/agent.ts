@@ -15,6 +15,7 @@ class Agent{
   private _velocity : any;
   private _acceleration : any;
   private _mass : number;
+  private _fast : boolean;
   private _brain : Brain;
   private _totalReward : number;
   private _sprite : any;
@@ -34,6 +35,7 @@ class Agent{
     this._velocity = $V([0, 0]);
     this._acceleration = $V([0, 0]);
     this._mass = 0.3;
+    this._fast = true;
     this._brain = new Brain(this, "forward");
     this._totalReward = 0.0;
     this._sprite = new Sprite("textures/test.png");
@@ -55,7 +57,7 @@ class Agent{
 
     // init
     this._brain.setBrain("forward");
-
+    $('.fa-rocket').toggleClass('fa-wheelchair');
   }
 
   // ========================================
@@ -72,12 +74,8 @@ class Agent{
         this.toggleAutoMove();
       break;
 
-      case "SpeedUp":
-        this.multiplySpeed(1.2);
-      break;
-
-      case "SpeedDown":
-        this.multiplySpeed(0.8);
+      case "Speed":
+        this.toggleSpeed();
       break;
 
       case "HUD":
@@ -98,6 +96,14 @@ class Agent{
 
       case "Careful":
         this._brain.setBrain("careful");
+      break;
+
+      case "Value":
+        this._brain.setBrain("value");
+      break;
+
+      case "Policy":
+        this._brain.setBrain("policy");
       break;
 
     default:
@@ -139,10 +145,10 @@ class Agent{
           this.toggleAutoMove();
           break;
         case 188:
-          this.multiplySpeed(0.8);
+          this.speedDown()
           break;
         case 190:
-          this.multiplySpeed(1.2);
+          this.speedUp();
           break;
         case 49:
           this._brain.setBrain("stupid");
@@ -153,6 +159,15 @@ class Agent{
         case 51:
           this._brain.setBrain("forward");
           break;
+          case 52:
+            this._brain.setBrain("careful");
+            break;
+          case 53:
+            this._brain.setBrain("value");
+            break;
+          case 54:
+            this._brain.setBrain("policy");
+            break;
         default:
       }
     }
@@ -184,7 +199,6 @@ class Agent{
     this._travelTimer.update(deltaTime);
 
     if(this._travelTimer.done()){
-
 
       if(this._autoMove){
 
@@ -226,7 +240,7 @@ class Agent{
 
     this.updateCurrentStatusInfo();
     this.clearHistory();
-    Environment.setMap("standard");
+    Environment.setMap(Environment._mapType);
 
 
   }
@@ -239,14 +253,25 @@ class Agent{
     var prev = document.getElementById(prev_id);
     $(prev).css("opacity", "0.5");
     $(prev).css("color", " RGBA(120,120,120,1)");
+    $(prev).css("box-shadow", "0px 0px 0px #888888");
 
     $(current).css("opacity", "1.0");
-    $(current).css("color", "white");
+    $(current).css("color", "RGBA(200,200,200,1)");
+    $(current).css("box-shadow", "3px 2px 3px RGBA(100,100,100,0.5)");
   }
 
   private toggleHUD() : void{
-    $("#HUD").fadeToggle(300, null);
+    var fadeSpeed = 300;
+    if(this._HUD){
+      $("#agent-current-status").fadeTo( fadeSpeed, 0.0 )
+      $("#agent-history-holder").fadeTo( fadeSpeed, 0.0 )
+    }else{
+      $("#agent-current-status").fadeTo( fadeSpeed, 1 )
+      $("#agent-history-holder").fadeTo( fadeSpeed, 1 )
+    }
     this._HUD = !this._HUD;
+
+
   }
 
   private getInfoString() : string{
@@ -397,6 +422,25 @@ class Agent{
   private multiplySpeed(factor : number) : void{
     var newTime = this._travelTimer.getStartTime() * (1/factor);
     this._travelTimer.setStartTime(newTime);
+  }
+
+  private toggleSpeed(){
+    $('.fa-rocket').toggleClass('fa-wheelchair');
+    this._fast = !this._fast;
+    if(this._fast) this.speedUp();
+    else this.speedDown();
+  }
+
+  private speedUp() : void{
+    this.setSpeed(0.10);
+    this._fast = true;
+  }
+  private speedDown() : void{
+    this.setSpeed(10);
+    this._fast = false;
+  }
+  private setSpeed(speed : number) : void{
+    this._travelTimer.setStartTime(speed);
   }
 
   private bumpTowards(direction : string){

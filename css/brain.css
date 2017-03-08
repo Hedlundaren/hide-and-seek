@@ -1,56 +1,45 @@
 
 #brain-symbol{
 	margin-top: 10px;
-	margin-left: 4px;
-	position: fixed;
+	margin-left: 40px;
 	color: RGBA(120, 120, 120, 1);
 	border-radius: 100px;
-	top: 80px;
-	left: 640px;
+	top: 90px;
+	left: 50px;
 }
 
 .brain-button{
-	position: fixed;
+	position: relative;
 	opacity: 0.5;
-	z-index: 3;
-	left: 607px;
-	width: 150px;
-	height: 50px;
-	padding-right: 20px;
-	background: #aaaaaa;
+	left: 10px;
+	width: 140px;
+	height: 45px;
+	background: RGBA(120, 120, 120, 0);
 	border: 2px solid RGBA(140,140,140,1);
-	border-left: 0px solid RGBA(140,140,140,1);
-	border-top-right-radius: 5px;
-	border-bottom-right-radius: 5px;
+	border-radius: 50px;
 	color: RGBA(120,120,120,1);
 	font-family: monospace;
 	font-size: 20px;
 	font-weight: bold;
+	margin-top: 15px;
+	z-index: 3;
 
 }
 .brain-button:hover{
 	border: 2px solid RGBA(200,200,200,1);
-	border-left: 0px solid RGBA(200,200,200,1);
 }
 
 .brain-button:active{
 	border: 2px solid RGBA(140,140,140,1);
-	border-left: 0px solid RGBA(200,200,200,1);
 	color: RGBA(120,120,120,1);
 }
 
-#stupid{
-	top: 150px;
-}
-
-#simple{
-	top: 210px;
-}
-
-#forward{
-	top: 270px;
-}
-
-#careful{
-	top: 330px;
+#brain-holder{
+	position: relative;
+	float: left;
+	width: 180px;
+	height: 500px;
+	top: 0px;
+	left: 40px;
+	z-index: 1;
 }

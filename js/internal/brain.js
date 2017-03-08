@@ -99,6 +99,12 @@ var Brain = (function () {
                 this.thinkForward(300);
                 this._avoid_red = true;
                 break;
+            case "value":
+                this.thinkStupid();
+                break;
+            case "policy":
+                this.thinkStupid();
+                break;
         }
     };
     Brain.prototype.tryAddDirection = function (direction, path, prev_square_id) {
