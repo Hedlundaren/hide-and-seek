@@ -1,7 +1,8 @@
 var Environment = (function () {
     function Environment() {
         Environment._theme = "night";
-        this.createGrid(6, 6, 427);
+        Environment._sideLength = 6;
+        this.createGrid(Environment._sideLength, Environment._sideLength, 427);
         this._agent = new Agent();
     }
     Environment.prototype.update = function (deltaTime) {

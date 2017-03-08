@@ -24,7 +24,6 @@ class Agent{
   private _travelTimer : Stopwatch;
   private _autoMove : boolean;
   public _nextMove : string;
-  private _envSize : number;
   private _HUD : boolean;
 
   private _prev_pos_error : any;
@@ -35,7 +34,7 @@ class Agent{
     this._velocity = $V([0, 0]);
     this._acceleration = $V([0, 0]);
     this._mass = 0.3;
-    this._brain = new Brain(this, "simple");
+    this._brain = new Brain(this, "forward");
     this._totalReward = 0.0;
     this._sprite = new Sprite("textures/test.png");
     this._goalPosition = this._position;
@@ -44,8 +43,7 @@ class Agent{
     this._iteration = 0;
     this._travelTimer = new Stopwatch(0.5);
     this._autoMove = false;
-    this._nextMove = ""
-    this._envSize = Math.sqrt(Environment._squares.length);
+    this._nextMove = "";
     this._HUD = true;
 
     this._prev_pos_error = $V([0,0]);
@@ -56,7 +54,7 @@ class Agent{
     window.addEventListener( 'mousedown', this.onMouseDown, false );
 
     // init
-    this._brain.setBrain("simple");
+    this._brain.setBrain("forward");
 
   }
 
@@ -293,17 +291,17 @@ class Agent{
   // ========================================
   // =============== SENSORS ================
   // ========================================
-  public getLeftId() : number{ return this._currentSquare - this._envSize; };
+  public getLeftId() : number{ return this._currentSquare - Environment._sideLength; };
   public getUpId() : number{ return this._currentSquare - 1; };
-  public getRightId() : number{ return this._currentSquare + this._envSize; };
+  public getRightId() : number{ return this._currentSquare + Environment._sideLength; };
   public getDownId() : number{ return this._currentSquare + 1; };
 
   public outerWallCheck(direction : string) : boolean{
     switch(direction){
-      case "left" : return this._currentSquare > this._envSize-1;
-      case "up" : return this._currentSquare % this._envSize != 0;
-      case "right" : return this._currentSquare < Environment._squares.length - this._envSize;
-      case "down" : return (this._currentSquare+1) % this._envSize != 0;
+      case "left" : return this._currentSquare > Environment._sideLength-1;
+      case "up" : return this._currentSquare % Environment._sideLength != 0;
+      case "right" : return this._currentSquare < Environment._squares.length - Environment._sideLength;
+      case "down" : return (this._currentSquare+1) % Environment._sideLength != 0;
     }
   }
 

@@ -6,16 +6,67 @@ in this class are public so that the agent can access them.
 Depending on the type of the brain the agent will choose the
 correlating thinking method.
 //=======================================*/
+class Path{
+  private _path : string[];
+  private _pathIds : number[];
+  private _reward : number;
+  private _arrayId : number;
 
+  constructor(){
+    this._path = []; // array of directions
+    this._pathIds = []; // array of square ids
+    this._reward = 0; // total reward of this path
+  }
+
+  public addReward(reward : number) : void{ this._reward += reward; }
+  public addDirection(direction : string) : void{ this._path.push(direction); }
+  public addId(id : number) : void{ this._pathIds.push(id); }
+  public setArrayId(array_id){ this._arrayId = array_id; }
+
+  public getArrayId(){ return this._arrayId; }
+  public getReward() : number{ return this._reward; }
+  public getFirst() : string{ return this._path[0]; };
+  public getFirstId() : number{ return this._pathIds[0]; };
+  public getLast() : string{ return this._path[this._path.length - 1]; };
+  public getLastId() : number{ return this._pathIds[this._path.length - 1]; };
+
+  public copy(other : Path){
+      this._reward = other._reward;
+      for(var i = 0; i < other._path.length; i++){
+        this._path[i] = other._path[i];
+        this._pathIds[i] = other._pathIds[i];
+      }
+  }
+
+  public reset(){
+    this._path = [];
+    this._pathIds = [];
+    this._reward = 0;
+  }
+}
 
 class Brain{
 
   private _type : string;
   private _agent : Agent;
+  private _frontier : Path[];
+  private _iterations : number;
 
   constructor(agent, type){
     this._type = type;
     this._agent = agent;
+    this._frontier = [];
+    this._iterations = 0;
+  }
+
+
+  private reset(){
+    this._iterations = 0;
+    this._frontier = [];
+
+    for(var i = 0; i < this._frontier.length; i++){
+        this._frontier[i].reset();
+      }
   }
 
   public setBrain(type : string) : void{
@@ -31,7 +82,7 @@ class Brain{
     switch(this.getBrain()){
       case "stupid" : this.thinkStupid(); break;
       case "simple" : this.thinkSimple(); break;
-      case "forward" : this.thinkForward(); break;
+      case "forward" : this.thinkForward(200); break;
     }
   }
 
@@ -93,58 +144,85 @@ class Brain{
       }
     }
 
-    move = this.slipRisk(move);
+    //move = this.slipRisk(move);
+
     this._agent.setMove(move);
   }
+
 
   /*=======================================
   Looks in the future.
   =======================================*/
-  private thinkForward(){
+  private addPath(direction, path, id, array_id){
+    if(!this.wall(id, direction)){
 
-    // check rewards
-    var reward = -999999;
-    var temp_reward = -999999;
+      var temp = new Path();
+      temp.copy(path);
+      temp.addDirection(direction);
+      temp.setArrayId(array_id);
+      temp.addId(id);
+      temp.addReward(Environment._squares[this.getId(id, direction)].getReward());
+      this._frontier.push(temp);
+    }
+  }
+
+  private expandNode(id, step, path){
+    var direction = "";
+
+    // Remove prev from frontier
+    //this._frontier.splice(path.getArrayId(), 1);
+
+    // Add all new possible ways to frontier
+    direction = "left";
+    this.addPath(direction, path, id, this._frontier.length - 1);
+    direction = "up";
+    this.addPath(direction, path, id, this._frontier.length - 1);
+    direction = "right";
+    this.addPath(direction, path, id, this._frontier.length - 1);
+    direction = "down";
+    this.addPath(direction, path, id, this._frontier.length - 1);
+
+
+    // Choose frontier with best reward
+    var next = 0;
+    var maxReward = this._frontier[next].getReward();
+    for(var i = 1; i < this._frontier.length; i++){
+      if(this._frontier[i].getReward() > maxReward){
+        next = i;
+        maxReward = this._frontier[i].getReward();
+      }
+    }
+
+    this._iterations++;
+    while(step > this._iterations){
+      var newDirection = this._frontier[next].getFirst();
+      var newId = this._frontier[next].getFirstId();
+      this.expandNode(newId, step, this._frontier[next]);
+    }
+
+  }
+
+  private thinkForward(step : number){
+
     var move = "";
+    var path = new Path();
     var id = this._agent._currentSquare;
 
-    // left
-    if(this.wallCheck(id, "left")){
-      temp_reward = Environment._squares[this._agent.getLeftId()].getReward();
-      if(temp_reward > reward){
-        reward = temp_reward;
-        move = "left"
+    this.expandNode(id, step, path);
+
+    var next = 0;
+    var maxReward = this._frontier[0].getReward();
+    for(var i = 1; i < this._frontier.length; i++){
+      if(this._frontier[i].getReward() > maxReward){
+        next = i;
+        maxReward = this._frontier[i].getReward();
       }
     }
 
-    // up
-    if(this.wallCheck(id, "up")){
-      temp_reward = Environment._squares[this._agent.getUpId()].getReward();
-      if(temp_reward > reward){
-        reward = temp_reward;
-        move = "up"
-      }
-    }
+    move = this._frontier[next].getFirst();
+    console.log(this._frontier.length);
+    this.reset();
 
-    // right
-    if(this.wallCheck(id, "right")){
-      temp_reward = Environment._squares[this._agent.getRightId()].getReward();
-      if(temp_reward > reward){
-        reward = temp_reward;
-        move = "right"
-      }
-    }
-
-    // down
-    if(this.wallCheck(id, "down")){
-      temp_reward = Environment._squares[this._agent.getDownId()].getReward();
-      if(temp_reward > reward){
-        reward = temp_reward;
-        move = "down"
-      }
-    }
-
-    // expand square with largest reward
     this._agent.setMove(move);
   }
 
@@ -170,40 +248,44 @@ class Brain{
     return move;
   }
 
-
-  private wallCheck(id, direction : string) : boolean{
-    switch(direction){
-      case "left" :
-        if(this._agent.outerWallCheck("left")){
-          if(Environment._squares[this._agent.getLeftId()].getType() != "wall"){
-            return true;
-          }
-        }
-        break;
-
-      case "up" :
-        if(this._agent.outerWallCheck("up")){
-          if(Environment._squares[this._agent.getUpId()].getType() != "wall"){
-            return true;
-          }
-        }
-        break;
-
-      case "right" :
-        if(this._agent.outerWallCheck("right")){
-          if(Environment._squares[this._agent.getRightId()].getType() != "wall"){
-            return true;
-          }
-        }
-        break;
-
-      case "down" :
-        if(this._agent.outerWallCheck("down")){
-          if(Environment._squares[this._agent.getDownId()].getType() != "wall"){
-            return true;
-          }
-        }
-        break;
+  private getId(id : number, move : string) : number{
+    switch(move){
+      case "left": return this.getLeftId(id);
+      case "up": return this.getUpId(id);
+      case "right": return this.getRightId(id);
+      case "down": return this.getDownId(id);
+      default: return id;
     }
+  }
+
+  private getLeftId(id) : number{ return id - Environment._sideLength; };
+  private getUpId(id) : number{ return Environment._sideLength - 1; };
+  private getRightId(id) : number{ return id + Environment._sideLength; };
+  private getDownId(id) : number{ return id + 1; };
+
+
+  // Returns true if there is a wall in this direction
+  private outerWall(id : number, direction : string) : boolean{
+    switch(direction){
+      case "left" : return id <= (Environment._sideLength-1);
+      case "up" : return id % Environment._sideLength == 0;
+      case "right" : return id >= Environment._squares.length - Environment._sideLength;
+      case "down" : return (id+1) % Environment._sideLength == 0;
+    }
+  }
+
+  // Returns true if there is a wall in this direction
+  private wall(id : number, direction : string) : boolean{
+    if(!this.outerWall(id, direction)){
+
+      var slot = this.getId(id,direction);
+      if(Environment._squares[slot].getType() == "wall"){
+        return true;  // Inner wall collision
+      }
+    }else{
+      return true;  // Outer wall collision
+    }
+
+    return false; // No wall
   }
 }

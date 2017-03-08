@@ -5,6 +5,7 @@ class Environment{
 
   private _agent : Agent;
   static _theme : string;
+  static _sideLength : number;
   static _squares : Square[];
   static _background : Square;
   static _backdrop1 : Square;
@@ -12,7 +13,8 @@ class Environment{
 
   constructor(){
     Environment._theme = "night";
-    this.createGrid(6, 6, 427);
+    Environment._sideLength = 6;
+    this.createGrid(Environment._sideLength, Environment._sideLength, 427);
     this._agent = new Agent();
   }
 
