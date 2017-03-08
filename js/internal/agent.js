@@ -28,6 +28,9 @@ var Agent = (function () {
                 case "Forward":
                     _this._brain.setBrain("forward");
                     break;
+                case "Careful":
+                    _this._brain.setBrain("careful");
+                    break;
                 default:
             }
         };
@@ -113,7 +116,6 @@ var Agent = (function () {
     };
     Agent.prototype.toggleAutoMove = function () {
         this._autoMove = !this._autoMove;
-        var autoMoveChecker = document.getElementById('autoMoveChecker');
         $('.fa-play').toggleClass('fa-pause');
     };
     Agent.prototype.update = function (deltaTime) {
@@ -150,6 +152,7 @@ var Agent = (function () {
         this._iteration = 0;
         this._totalReward = 0;
         this._nextMove = "";
+        this._brain.reset();
         for (var i = 0; i < Environment._squares.length; i++) {
             Environment._squares[i].setUtility(0);
         }

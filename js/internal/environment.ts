@@ -50,6 +50,20 @@ class Environment{
       Environment._squares[16].setType("wall", Environment._theme);
       Environment._squares[22].setType("wall", Environment._theme);
     }
+    else if(type == "random"){
+      Environment._squares[15].setType("start", Environment._theme);
+
+      for(var i = 0; i < Environment._squares.length; i++){
+
+        var num = Math.floor(Math.random() * 4); // random 0 - 3
+        switch(num){
+          case 0 : Environment._squares[i].setType("green", Environment._theme); break;
+          case 1 : Environment._squares[i].setType("red", Environment._theme); break;
+          case 2 : Environment._squares[i].setType("wall", Environment._theme); break;
+        }
+      }
+
+    }
   }
 
 

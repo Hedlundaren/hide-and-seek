@@ -1,26 +1,31 @@
 var Path = (function () {
     function Path() {
-        this._path = [];
-        this._pathIds = [];
+        this._directions = [];
+        this._squareIds = [];
         this._reward = 0;
     }
     Path.prototype.addReward = function (reward) { this._reward = this._reward + reward; };
-    Path.prototype.addDirection = function (direction) { this._path.push(direction); };
-    Path.prototype.addId = function (id) { this._pathIds.push(id); };
-    Path.prototype.setArrayId = function (array_id) { this._arrayId = array_id; };
-    Path.prototype.getArrayId = function () { return this._arrayId; };
+    Path.prototype.addDirection = function (direction) { this._directions.push(direction); };
+    Path.prototype.addSquareId = function (id) { this._squareIds.push(id); };
     Path.prototype.getReward = function () { return this._reward; };
-    Path.prototype.getFirst = function () { return this._path[0]; };
+    Path.prototype.getFirst_Direction = function () { return this._directions[0]; };
     ;
-    Path.prototype.getFirstId = function () { return this._pathIds[0]; };
+    Path.prototype.getFirst_SquareId = function () { return this._squareIds[0]; };
     ;
-    Path.prototype.getLast = function () { return this._path[this._path.length - 1]; };
+    Path.prototype.getLast_Direction = function () { return this._directions[this._directions.length - 1]; };
     ;
-    Path.prototype.getLastId = function () { return this._pathIds[this._path.length - 1]; };
+    Path.prototype.getLast_SquareId = function () { return this._squareIds[this._squareIds.length - 1]; };
     ;
+    Path.prototype.copy = function (path) {
+        this._reward = path.getReward();
+        for (var i = 0; i < path._directions.length; i++) {
+            this.addSquareId(path._squareIds[i]);
+            this.addDirection(path._directions[i]);
+        }
+    };
     Path.prototype.reset = function () {
-        this._path = [];
-        this._pathIds = [];
+        this._directions = [];
+        this._squareIds = [];
         this._reward = 0;
     };
     return Path;
@@ -31,7 +36,7 @@ var Brain = (function () {
         this.onKeyDown = function (e) {
             switch (e.key) {
                 case "Control":
-                    alert(_this.getId(_this._agent._currentSquare, "up"));
+                    console.log(_this.getId(_this._agent._currentSquare, "up"));
                     break;
             }
         };
@@ -39,8 +44,14 @@ var Brain = (function () {
         this._agent = agent;
         this._frontier = [];
         this._iterations = 0;
+        this._done = false;
+        this._avoid_red = false;
         window.addEventListener('keydown', this.onKeyDown, false);
     }
+    Brain.prototype.Done = function () {
+        this._done = true;
+        this._agent.toggleAutoMove();
+    };
     Brain.prototype.reset = function () {
         for (var i = 0; i < this._frontier.length; i++) {
             this._frontier[i].reset();
@@ -51,9 +62,16 @@ var Brain = (function () {
     Brain.prototype.setBrain = function (type) {
         this._agent.setBrainSelected(type, this._type);
         this._type = type;
+        if (type == "careful")
+            this._avoid_red = true;
+        else
+            this._avoid_red = false;
     };
     Brain.prototype.getBrain = function () {
         return this._type;
+    };
+    Brain.prototype.addFrontier = function (path) {
+        this._frontier.push(path);
     };
     Brain.prototype.think = function () {
         switch (this.getBrain()) {
@@ -64,8 +82,101 @@ var Brain = (function () {
                 this.thinkSimple();
                 break;
             case "forward":
-                this.thinkForward(50);
+                this.thinkForward(500);
+                this._avoid_red = false;
                 break;
+            case "careful":
+                this.thinkForward(300);
+                this._avoid_red = true;
+                break;
+        }
+    };
+    Brain.prototype.tryAddDirection = function (direction, path, prev_square_id) {
+        var current_square_id = this.getId(prev_square_id, direction);
+        var red_check = true;
+        if (this._avoid_red && !this.wall(prev_square_id, direction) && Environment._squares[current_square_id].getType() == "red") {
+            red_check = false;
+        }
+        if (!this.wall(prev_square_id, direction) && red_check) {
+            var newPath = new Path();
+            newPath.copy(path);
+            newPath.addDirection(direction);
+            newPath.addSquareId(current_square_id);
+            newPath.addReward(Environment._squares[current_square_id].getReward());
+            var bad_expansion = false;
+            var bad_node = false;
+            var bad_id = -1;
+            for (var i = 0; i < this._frontier.length; i++) {
+                if (this._frontier[i].getLast_SquareId() == current_square_id) {
+                    if (this._frontier[i].getReward() > newPath.getReward()) {
+                        bad_expansion = true;
+                    }
+                    else {
+                        bad_node = true;
+                        bad_id = i;
+                    }
+                }
+            }
+            if (bad_node) {
+                var temp_frontier = [];
+                for (var i = 0; i < this._frontier.length; i++) {
+                    if (i != bad_id) {
+                        temp_frontier.push(this._frontier[i]);
+                    }
+                }
+                this._frontier = temp_frontier;
+            }
+            if (!bad_expansion) {
+                this.addFrontier(newPath);
+            }
+        }
+    };
+    Brain.prototype.shuffle = function (array) {
+        var currentIndex = array.length, temporaryValue, randomIndex;
+        while (0 !== currentIndex) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+            temporaryValue = array[currentIndex];
+            array[currentIndex] = array[randomIndex];
+            array[randomIndex] = temporaryValue;
+        }
+        return array;
+    };
+    Brain.prototype.expandNode = function (square_id, path) {
+        this._iterations++;
+        var dirs = ["left", "up", "right", "down"];
+        dirs = this.shuffle(dirs);
+        for (var i = 0; i < dirs.length; i++) {
+            this.tryAddDirection(dirs[i], path, square_id);
+        }
+    };
+    Brain.prototype.thinkForward = function (steps) {
+        var move = "right";
+        var first_square_id = this._agent._currentSquare;
+        var empty_path = new Path();
+        this.expandNode(first_square_id, empty_path);
+        while (this._iterations < steps) {
+            var num_expansions = this._frontier.length;
+            for (var i = 0; i < num_expansions; i++) {
+                this.expandNode(this._frontier[i].getLast_SquareId(), this._frontier[i]);
+            }
+        }
+        var maxReward = -99;
+        var next_frontier_id = -1;
+        for (var i = 0; i < this._frontier.length; i++) {
+            if (this._frontier[i].getReward() > maxReward) {
+                maxReward = this._frontier[i].getReward();
+                next_frontier_id = i;
+            }
+        }
+        if (this._frontier[next_frontier_id].getReward() < 0) {
+            this.Done();
+            this._agent.setMove("");
+        }
+        else {
+            move = this._frontier[next_frontier_id].getFirst_Direction();
+            this._agent.setMove(move);
+            this.reset();
         }
     };
     Brain.prototype.thinkStupid = function () {
@@ -124,79 +235,6 @@ var Brain = (function () {
         }
         this._agent.setMove(move);
     };
-    Brain.prototype.addPath = function (direction, path, prev_square_id, array_id) {
-        if (!this.wall(prev_square_id, direction)) {
-            var current_square_id = this.getId(prev_square_id, direction);
-            var temp = new Path();
-            for (var i = 0; i < path._path.length; i++) {
-                temp._path[i] = path._path[i];
-                temp._pathIds[i] = path._pathIds[i];
-            }
-            temp.addReward(Environment._squares[current_square_id].getReward() + path.getReward());
-            temp.addDirection(direction);
-            temp.addId(current_square_id);
-            temp.setArrayId(array_id);
-            var already_expanded = false;
-            for (var i = 0; i < this._frontier.length; i++) {
-                for (var j = 0; j < this._frontier[i]._pathIds.length; j++) {
-                    if (this._frontier[i]._pathIds[j] == current_square_id) {
-                        already_expanded = true;
-                        if (this._frontier[i].getReward() <= temp.getReward()) {
-                            this._frontier.push(temp);
-                            this._frontier.splice(this._frontier[i].getArrayId(), 1);
-                        }
-                        else
-                            break;
-                    }
-                }
-            }
-            if (!already_expanded) {
-                this._frontier.push(temp);
-            }
-        }
-    };
-    Brain.prototype.expandNode = function (square_id, step, path) {
-        this._iterations++;
-        var direction = "";
-        this._frontier.splice(path.getArrayId(), 1);
-        direction = "left";
-        this.addPath(direction, path, square_id, this._frontier.length);
-        direction = "up";
-        this.addPath(direction, path, square_id, this._frontier.length);
-        direction = "right";
-        this.addPath(direction, path, square_id, this._frontier.length);
-        direction = "down";
-        this.addPath(direction, path, square_id, this._frontier.length);
-    };
-    Brain.prototype.thinkForward = function (step) {
-        var move = "";
-        var path = new Path();
-        var square_id = this._agent._currentSquare;
-        this.expandNode(square_id, step, path);
-        while (step > this._iterations) {
-            var next = 0;
-            var maxReward = this._frontier[next].getReward();
-            for (var i = 1; i < this._frontier.length; i++) {
-                if (this._frontier[i].getReward() > maxReward) {
-                    next = i;
-                    maxReward = this._frontier[i].getReward();
-                }
-            }
-            var newId = this._frontier[next].getLastId();
-            this.expandNode(newId, step, this._frontier[next]);
-        }
-        var next = 0;
-        var maxReward = this._frontier[0].getReward();
-        for (var i = 1; i < this._frontier.length; i++) {
-            if (this._frontier[i].getReward() > maxReward) {
-                next = i;
-                maxReward = this._frontier[i].getReward();
-            }
-        }
-        move = this._frontier[next].getFirst();
-        this._agent.setMove(move);
-        this.reset();
-    };
     Brain.prototype.slipRisk = function (move) {
         var num = Math.random();
         if (num <= 0.2) {
@@ -250,9 +288,9 @@ var Brain = (function () {
             case "down": return (id + 1) % Environment._sideLength == 0;
         }
     };
-    Brain.prototype.wall = function (id, direction) {
-        if (!this.outerWall(id, direction)) {
-            var slot = this.getId(id, direction);
+    Brain.prototype.wall = function (prev_square_id, direction) {
+        if (!this.outerWall(prev_square_id, direction)) {
+            var slot = this.getId(prev_square_id, direction);
             if (Environment._squares[slot].getType() == "wall") {
                 return true;
             }

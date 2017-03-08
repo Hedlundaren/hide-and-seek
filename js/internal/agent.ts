@@ -96,6 +96,10 @@ class Agent{
         this._brain.setBrain("forward");
       break;
 
+      case "Careful":
+        this._brain.setBrain("careful");
+      break;
+
     default:
   }
 
@@ -166,9 +170,8 @@ class Agent{
     return this._nextMove;
   }
 
-  private toggleAutoMove() : void{
+  public toggleAutoMove() : void{
     this._autoMove = !this._autoMove;
-    var autoMoveChecker = document.getElementById('autoMoveChecker');
     $('.fa-play').toggleClass('fa-pause');
   }
 
@@ -215,6 +218,7 @@ class Agent{
     this._iteration = 0;
     this._totalReward = 0;
     this._nextMove = "";
+    this._brain.reset();
 
     for(var i = 0; i < Environment._squares.length; i++){
       Environment._squares[i].setUtility(0);

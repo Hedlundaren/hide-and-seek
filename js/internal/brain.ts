@@ -7,32 +7,37 @@ Depending on the type of the brain the agent will choose the
 correlating thinking method.
 //=======================================*/
 class Path{
-  public _path : string[];
-  public _pathIds : number[]; // square ids
+  public _directions : string[];
+  public _squareIds : number[]; // square ids
   public _reward : number; // Used for picking path and expanding nodes
-  public _arrayId : number; // Used for splice
 
   constructor(){
-    this._path = []; // array of directions
-    this._pathIds = []; // array of square ids
+    this._directions = []; // array of directions
+    this._squareIds = []; // array of square ids
     this._reward = 0; // total reward of this path
   }
 
   public addReward(reward : number) : void{ this._reward = this._reward + reward; }
-  public addDirection(direction : string) : void{ this._path.push(direction); }
-  public addId(id : number) : void{ this._pathIds.push(id); }
-  public setArrayId(array_id){ this._arrayId = array_id; }
+  public addDirection(direction : string) : void{ this._directions.push(direction); }
+  public addSquareId(id : number) : void{ this._squareIds.push(id); }
 
-  public getArrayId(){ return this._arrayId; }
   public getReward() : number{ return this._reward; }
-  public getFirst() : string{ return this._path[0]; };
-  public getFirstId() : number{ return this._pathIds[0]; };
-  public getLast() : string{ return this._path[this._path.length - 1]; };
-  public getLastId() : number{ return this._pathIds[this._path.length - 1]; };
+  public getFirst_Direction() : string{ return this._directions[0]; };
+  public getFirst_SquareId() : number{ return this._squareIds[0]; };
+  public getLast_Direction() : string{ return this._directions[this._directions.length - 1]; };
+  public getLast_SquareId() : number{ return this._squareIds[this._squareIds.length - 1]; };
+
+  public copy(path : Path){
+    this._reward = path.getReward();
+    for(var i = 0; i < path._directions.length; i++){
+      this.addSquareId(path._squareIds[i]);
+      this.addDirection(path._directions[i]);
+    }
+  }
 
   public reset(){
-    this._path = [];
-    this._pathIds = [];
+    this._directions = [];
+    this._squareIds = [];
     this._reward = 0;
   }
 }
@@ -43,25 +48,33 @@ class Brain{
   private _agent : Agent;
   private _frontier : Path[];
   private _iterations : number;
+  private _done : boolean;
+  private _avoid_red : boolean;
 
   constructor(agent, type){
     this._type = type;
     this._agent = agent;
     this._frontier = [];
     this._iterations = 0;
+    this._done = false;
+    this._avoid_red = false;
     window.addEventListener( 'keydown', this.onKeyDown, false );
   }
 
   onKeyDown = (e) => {
     switch(e.key){
       case "Control" :
-      alert(this.getId(this._agent._currentSquare, "up"));
+      console.log(this.getId(this._agent._currentSquare, "up"));
       break;
     }
 
   }
+  private Done(){
+    this._done = true;
+    this._agent.toggleAutoMove();
+  }
 
-  private reset(){
+  public reset(){
     for(var i = 0; i < this._frontier.length; i++){
       this._frontier[i].reset();
     }
@@ -74,17 +87,141 @@ class Brain{
   public setBrain(type : string) : void{
     this._agent.setBrainSelected(type, this._type);
     this._type = type;
+    if(type == "careful") this._avoid_red = true; else this._avoid_red = false;
   }
 
   public getBrain() : string{
     return this._type;
   }
 
+  private addFrontier(path : Path){
+    this._frontier.push(path);
+  }
+
   public think(){
     switch(this.getBrain()){
       case "stupid" : this.thinkStupid(); break;
       case "simple" : this.thinkSimple(); break;
-      case "forward" : this.thinkForward(50); break;
+      case "forward" : this.thinkForward(500); this._avoid_red = false; break;
+      case "careful" : this.thinkForward(300); this._avoid_red = true; break;
+    }
+  }
+
+  /*=======================================
+    thinkForward expands every node that leads to a new final destination with better reward.
+    Enables agent to find all green slots but is limited since it
+    increases size of frontiers with a power of 4 each expansion.
+  =======================================*/
+  private tryAddDirection(direction, path, prev_square_id){
+    var current_square_id = this.getId(prev_square_id, direction);
+
+    // Checker becomes false if we should avoid red and next square is red
+    var red_check = true;
+    if(this._avoid_red && !this.wall(prev_square_id, direction) && Environment._squares[current_square_id].getType() == "red"){
+      red_check = false;
+    }
+
+    if(!this.wall(prev_square_id, direction) && red_check){
+
+      // Create new path with old values
+      var newPath = new Path();
+      newPath.copy(path); // copy existing path into newPath
+
+      // Add new values
+      newPath.addDirection(direction);
+      newPath.addSquareId(current_square_id);
+      newPath.addReward(Environment._squares[current_square_id].getReward());
+
+      // See if node ending already exists with better outcome
+      var bad_expansion : boolean = false;
+      var bad_node : boolean = false;
+      var bad_id : number = -1;
+      for(var i = 0; i < this._frontier.length; i++){
+        // if path to current ending square already exists
+        // find out what is bad
+        if(this._frontier[i].getLast_SquareId() == current_square_id ){
+          if( this._frontier[i].getReward() > newPath.getReward()){
+            bad_expansion = true;
+          }else{
+            bad_node = true;
+            bad_id = i;
+          }
+        }
+      }
+      if(bad_node){
+        var temp_frontier : Path[] = [];
+        for(var i = 0; i < this._frontier.length; i++){
+          if(i != bad_id){
+            temp_frontier.push(this._frontier[i]);
+          }
+        }
+        this._frontier = temp_frontier;
+      }
+      if(!bad_expansion){
+        this.addFrontier(newPath);
+      }
+    }
+
+  }
+
+  private shuffle(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex;
+    while (0 !== currentIndex) {
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex -= 1;
+      temporaryValue = array[currentIndex];
+      array[currentIndex] = array[randomIndex];
+      array[randomIndex] = temporaryValue;
+    }
+    return array;
+  }
+
+  private expandNode(square_id, path){
+    this._iterations++;
+    // expand node in all directions randomly
+    var dirs = ["left", "up", "right", "down"];
+    dirs = this.shuffle(dirs);
+    for(var i = 0; i < dirs.length; i++){
+      this.tryAddDirection(dirs[i], path, square_id);
+    }
+  }
+
+  private thinkForward(steps : number){
+    var move = "right";
+    var first_square_id = this._agent._currentSquare;
+    var empty_path = new Path();
+
+    // expand first node
+    this.expandNode(first_square_id, empty_path);
+
+    while(this._iterations < steps){
+      // EXPAND ALL FRONTIERS
+      // decide what node has the highest reward
+      var num_expansions = this._frontier.length;
+      for(var i = 0; i < num_expansions; i++){
+        // expand node with most reward
+        this.expandNode(this._frontier[i].getLast_SquareId(), this._frontier[i]);
+      }
+    }
+
+    // decide what node has the highest reward
+    var maxReward = -99;
+    var next_frontier_id = -1;
+    for(var i = 0; i < this._frontier.length; i++){
+      if(this._frontier[i].getReward() > maxReward){
+        maxReward = this._frontier[i].getReward();
+        next_frontier_id = i; // Decide what frontier to choose
+      }
+    }
+
+    // make it its first move if not done
+    if(this._frontier[next_frontier_id].getReward() < 0) {
+      this.Done();
+      this._agent.setMove("");
+    } else{
+      move = this._frontier[next_frontier_id].getFirst_Direction();
+      this._agent.setMove(move);
+      this.reset();
     }
   }
 
@@ -150,111 +287,6 @@ class Brain{
     this._agent.setMove(move);
   }
 
-
-  /*=======================================
-  Looks in the future.
-  =======================================*/
-  private addPath(direction, path, prev_square_id, array_id){
-
-    if(!this.wall(prev_square_id, direction)){ // If no wall
-      var current_square_id = this.getId(prev_square_id, direction);
-
-      var temp = new Path();
-      for(var i = 0; i < path._path.length; i++){
-        temp._path[i] = path._path[i];
-        temp._pathIds[i] = path._pathIds[i];
-      }
-
-      // console.log("paths reward: " + path.getReward());
-      temp.addReward(Environment._squares[current_square_id].getReward() + path.getReward());
-      temp.addDirection(direction);
-      temp.addId(current_square_id);
-      temp.setArrayId(array_id);
-
-      // check if square has already been expanded
-      var already_expanded : boolean = false;
-      for(var i = 0; i < this._frontier.length; i++){
-        for(var j = 0; j < this._frontier[i]._pathIds.length; j++){
-          if(this._frontier[i]._pathIds[j] == current_square_id){
-            already_expanded = true;
-            if(this._frontier[i].getReward() <= temp.getReward()){
-              this._frontier.push(temp);
-              this._frontier.splice(this._frontier[i].getArrayId(), 1);
-            }else break;
-          }
-        }
-      }
-
-      if(!already_expanded){
-        this._frontier.push(temp);
-      }
-
-    }
-  }
-
-  private expandNode(square_id, step, path){
-
-    this._iterations++;
-    var direction = "";
-
-    // Remove prev from frontier
-    this._frontier.splice(path.getArrayId(), 1);
-
-    // Add all new possible ways to frontier
-    direction = "left";
-    this.addPath(direction, path, square_id, this._frontier.length);
-    direction = "up";
-    this.addPath(direction, path, square_id, this._frontier.length);
-    direction = "right";
-    this.addPath(direction, path, square_id, this._frontier.length);
-    direction = "down";
-    this.addPath(direction, path, square_id, this._frontier.length);
-
-    //console.log(square_id + ": " + path.getReward());
-  }
-
-  private thinkForward(step : number){
-
-    var move = "";
-    var path = new Path();
-    var square_id = this._agent._currentSquare;
-
-    this.expandNode(square_id, step, path);
-
-    while(step > this._iterations){
-
-      // Find next to expand
-      var next = 0;
-      var maxReward = this._frontier[next].getReward();
-      for(var i = 1; i < this._frontier.length; i++){
-        if(this._frontier[i].getReward() > maxReward){
-          next = i;
-          maxReward = this._frontier[i].getReward();
-        }
-      }
-
-      // Expand
-      var newId = this._frontier[next].getLastId();
-      this.expandNode(newId, step, this._frontier[next]);
-    }
-
-    // Find best path
-    var next = 0;
-    var maxReward = this._frontier[0].getReward();
-    for(var i = 1; i < this._frontier.length; i++){
-      if(this._frontier[i].getReward() > maxReward){
-        next = i;
-        maxReward = this._frontier[i].getReward();
-      }
-    }
-
-    move = this._frontier[next].getFirst();
-    this._agent.setMove(move);
-    this.reset();
-
-  }
-
-
   private slipRisk(move : string) : string{
     var num = Math.random();
     if(num <= 0.2){ // Slip risk of 20%
@@ -303,10 +335,10 @@ class Brain{
   }
 
   // Returns true if there is a wall in this direction
-  private wall(id : number, direction : string) : boolean{
-    if(!this.outerWall(id, direction)){
+  private wall(prev_square_id : number, direction : string) : boolean{
+    if(!this.outerWall(prev_square_id, direction)){
 
-      var slot = this.getId(id,direction);
+      var slot = this.getId(prev_square_id, direction);
       if(Environment._squares[slot].getType() == "wall"){
         return true;  // Inner wall collision
       }
