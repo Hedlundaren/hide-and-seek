@@ -44,6 +44,7 @@ var Brain = (function () {
         this._agent = agent;
         this._frontier = [];
         this._iterations = 0;
+        this._sloppy = false;
         this._done = false;
         this._avoid_red = false;
         window.addEventListener('keydown', this.onKeyDown, false);
@@ -72,6 +73,15 @@ var Brain = (function () {
     };
     Brain.prototype.addFrontier = function (path) {
         this._frontier.push(path);
+    };
+    Brain.prototype.setMove = function (move) {
+        if (this._sloppy) {
+            move = this.slipRisk(move);
+        }
+        this._agent.setMove(move);
+    };
+    Brain.prototype.toggleSloppy = function () {
+        this._sloppy = !this._sloppy;
     };
     Brain.prototype.think = function () {
         switch (this.getBrain()) {
@@ -171,11 +181,11 @@ var Brain = (function () {
         }
         if (this._frontier[next_frontier_id].getReward() < 0) {
             this.Done();
-            this._agent.setMove("");
+            this.setMove("");
         }
         else {
             move = this._frontier[next_frontier_id].getFirst_Direction();
-            this._agent.setMove(move);
+            this.setMove(move);
             this.reset();
         }
     };
@@ -196,7 +206,7 @@ var Brain = (function () {
                 move = "down";
                 break;
         }
-        this._agent.setMove(move);
+        this.setMove(move);
     };
     Brain.prototype.thinkSimple = function () {
         var move = "";
@@ -233,7 +243,7 @@ var Brain = (function () {
                     break;
             }
         }
-        this._agent.setMove(move);
+        this.setMove(move);
     };
     Brain.prototype.slipRisk = function (move) {
         var num = Math.random();

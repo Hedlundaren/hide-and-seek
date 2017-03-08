@@ -48,6 +48,7 @@ class Brain{
   private _agent : Agent;
   private _frontier : Path[];
   private _iterations : number;
+  private _sloppy : boolean; // enables risk of slipping (10% to each side of intended move)
   private _done : boolean;
   private _avoid_red : boolean;
 
@@ -56,6 +57,7 @@ class Brain{
     this._agent = agent;
     this._frontier = [];
     this._iterations = 0;
+    this._sloppy = false;
     this._done = false;
     this._avoid_red = false;
     window.addEventListener( 'keydown', this.onKeyDown, false );
@@ -96,6 +98,17 @@ class Brain{
 
   private addFrontier(path : Path){
     this._frontier.push(path);
+  }
+
+  private setMove(move : string){
+    if(this._sloppy){
+      move = this.slipRisk(move);
+    }
+    this._agent.setMove(move);
+  }
+
+  private toggleSloppy(){
+    this._sloppy = !this._sloppy;
   }
 
   public think(){
@@ -217,10 +230,10 @@ class Brain{
     // make it its first move if not done
     if(this._frontier[next_frontier_id].getReward() < 0) {
       this.Done();
-      this._agent.setMove("");
+      this.setMove("");
     } else{
       move = this._frontier[next_frontier_id].getFirst_Direction();
-      this._agent.setMove(move);
+      this.setMove(move);
       this.reset();
     }
   }
@@ -239,7 +252,7 @@ class Brain{
       case 2 : move = "right"; break;
       case 3 : move = "down"; break;
     }
-    this._agent.setMove(move)
+    this.setMove(move)
   }
 
   /*=======================================
@@ -283,8 +296,7 @@ class Brain{
       }
     }
 
-    //move = this.slipRisk(move);
-    this._agent.setMove(move);
+    this.setMove(move);
   }
 
   private slipRisk(move : string) : string{
