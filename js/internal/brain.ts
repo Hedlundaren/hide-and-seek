@@ -7,10 +7,10 @@ Depending on the type of the brain the agent will choose the
 correlating thinking method.
 //=======================================*/
 class Path{
-  private _path : string[];
-  private _pathIds : number[];
-  private _reward : number;
-  private _arrayId : number;
+  public _path : string[];
+  public _pathIds : number[]; // square ids
+  public _reward : number; // Used for picking path and expanding nodes
+  public _arrayId : number; // Used for splice
 
   constructor(){
     this._path = []; // array of directions
@@ -18,7 +18,7 @@ class Path{
     this._reward = 0; // total reward of this path
   }
 
-  public addReward(reward : number) : void{ this._reward += reward; }
+  public addReward(reward : number) : void{ this._reward = this._reward + reward; }
   public addDirection(direction : string) : void{ this._path.push(direction); }
   public addId(id : number) : void{ this._pathIds.push(id); }
   public setArrayId(array_id){ this._arrayId = array_id; }
@@ -29,14 +29,6 @@ class Path{
   public getFirstId() : number{ return this._pathIds[0]; };
   public getLast() : string{ return this._path[this._path.length - 1]; };
   public getLastId() : number{ return this._pathIds[this._path.length - 1]; };
-
-  public copy(other : Path){
-      this._reward = other._reward;
-      for(var i = 0; i < other._path.length; i++){
-        this._path[i] = other._path[i];
-        this._pathIds[i] = other._pathIds[i];
-      }
-  }
 
   public reset(){
     this._path = [];
@@ -57,16 +49,26 @@ class Brain{
     this._agent = agent;
     this._frontier = [];
     this._iterations = 0;
+    window.addEventListener( 'keydown', this.onKeyDown, false );
   }
 
+  onKeyDown = (e) => {
+    switch(e.key){
+      case "Control" :
+      alert(this.getId(this._agent._currentSquare, "up"));
+      break;
+    }
+
+  }
 
   private reset(){
+    for(var i = 0; i < this._frontier.length; i++){
+      this._frontier[i].reset();
+    }
+
     this._iterations = 0;
     this._frontier = [];
 
-    for(var i = 0; i < this._frontier.length; i++){
-        this._frontier[i].reset();
-      }
   }
 
   public setBrain(type : string) : void{
@@ -82,7 +84,7 @@ class Brain{
     switch(this.getBrain()){
       case "stupid" : this.thinkStupid(); break;
       case "simple" : this.thinkSimple(); break;
-      case "forward" : this.thinkForward(200); break;
+      case "forward" : this.thinkForward(50); break;
     }
   }
 
@@ -153,35 +155,44 @@ class Brain{
   /*=======================================
   Looks in the future.
   =======================================*/
-  private addPath(direction, path, id, array_id){
-    if(!this.wall(id, direction)){
+  private addPath(direction, path, square_id, array_id){
+
+    if(!this.wall(square_id, direction)){ // If no wall
 
       var temp = new Path();
-      temp.copy(path);
+      temp.addReward(path.getReward());
+      for(var i = 0; i < path._path.length; i++){
+        temp._path[i] = path._path[i];
+        temp._pathIds[i] = path._pathIds[i];
+      }
+
+      temp.addReward(Environment._squares[this.getId(square_id, direction)].getReward());
       temp.addDirection(direction);
+      temp.addId(this.getId(square_id, direction));
       temp.setArrayId(array_id);
-      temp.addId(id);
-      temp.addReward(Environment._squares[this.getId(id, direction)].getReward());
       this._frontier.push(temp);
     }
   }
 
-  private expandNode(id, step, path){
+  private expandNode(square_id, step, path){
+
+
     var direction = "";
 
     // Remove prev from frontier
-    //this._frontier.splice(path.getArrayId(), 1);
+    this._frontier.splice(path.getArrayId(), 1);
 
     // Add all new possible ways to frontier
     direction = "left";
-    this.addPath(direction, path, id, this._frontier.length - 1);
+    this.addPath(direction, path, square_id, this._frontier.length);
     direction = "up";
-    this.addPath(direction, path, id, this._frontier.length - 1);
+    this.addPath(direction, path, square_id, this._frontier.length);
     direction = "right";
-    this.addPath(direction, path, id, this._frontier.length - 1);
+    this.addPath(direction, path, square_id, this._frontier.length);
     direction = "down";
-    this.addPath(direction, path, id, this._frontier.length - 1);
+    this.addPath(direction, path, square_id, this._frontier.length);
 
+    // console.log(id + ": " + path.getReward());
 
     // Choose frontier with best reward
     var next = 0;
@@ -193,10 +204,10 @@ class Brain{
       }
     }
 
+
     this._iterations++;
     while(step > this._iterations){
-      var newDirection = this._frontier[next].getFirst();
-      var newId = this._frontier[next].getFirstId();
+      var newId = this._frontier[next].getLastId();
       this.expandNode(newId, step, this._frontier[next]);
     }
 
@@ -206,9 +217,9 @@ class Brain{
 
     var move = "";
     var path = new Path();
-    var id = this._agent._currentSquare;
+    var square_id = this._agent._currentSquare;
 
-    this.expandNode(id, step, path);
+    this.expandNode(square_id, step, path);
 
     var next = 0;
     var maxReward = this._frontier[0].getReward();
@@ -220,7 +231,6 @@ class Brain{
     }
 
     move = this._frontier[next].getFirst();
-    console.log(this._frontier.length);
     this.reset();
 
     this._agent.setMove(move);
@@ -259,7 +269,7 @@ class Brain{
   }
 
   private getLeftId(id) : number{ return id - Environment._sideLength; };
-  private getUpId(id) : number{ return Environment._sideLength - 1; };
+  private getUpId(id) : number{ return id - 1; };
   private getRightId(id) : number{ return id + Environment._sideLength; };
   private getDownId(id) : number{ return id + 1; };
 

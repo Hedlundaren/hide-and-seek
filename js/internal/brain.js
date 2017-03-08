@@ -4,7 +4,7 @@ var Path = (function () {
         this._pathIds = [];
         this._reward = 0;
     }
-    Path.prototype.addReward = function (reward) { this._reward += reward; };
+    Path.prototype.addReward = function (reward) { this._reward = this._reward + reward; };
     Path.prototype.addDirection = function (direction) { this._path.push(direction); };
     Path.prototype.addId = function (id) { this._pathIds.push(id); };
     Path.prototype.setArrayId = function (array_id) { this._arrayId = array_id; };
@@ -18,13 +18,6 @@ var Path = (function () {
     ;
     Path.prototype.getLastId = function () { return this._pathIds[this._path.length - 1]; };
     ;
-    Path.prototype.copy = function (other) {
-        this._reward = other._reward;
-        for (var i = 0; i < other._path.length; i++) {
-            this._path[i] = other._path[i];
-            this._pathIds[i] = other._pathIds[i];
-        }
-    };
     Path.prototype.reset = function () {
         this._path = [];
         this._pathIds = [];
@@ -34,17 +27,26 @@ var Path = (function () {
 }());
 var Brain = (function () {
     function Brain(agent, type) {
+        var _this = this;
+        this.onKeyDown = function (e) {
+            switch (e.key) {
+                case "Control":
+                    alert(_this.getId(_this._agent._currentSquare, "up"));
+                    break;
+            }
+        };
         this._type = type;
         this._agent = agent;
         this._frontier = [];
         this._iterations = 0;
+        window.addEventListener('keydown', this.onKeyDown, false);
     }
     Brain.prototype.reset = function () {
-        this._iterations = 0;
-        this._frontier = [];
         for (var i = 0; i < this._frontier.length; i++) {
             this._frontier[i].reset();
         }
+        this._iterations = 0;
+        this._frontier = [];
     };
     Brain.prototype.setBrain = function (type) {
         this._agent.setBrainSelected(type, this._type);
@@ -62,7 +64,7 @@ var Brain = (function () {
                 this.thinkSimple();
                 break;
             case "forward":
-                this.thinkForward(200);
+                this.thinkForward(50);
                 break;
         }
     };
@@ -122,27 +124,32 @@ var Brain = (function () {
         }
         this._agent.setMove(move);
     };
-    Brain.prototype.addPath = function (direction, path, id, array_id) {
-        if (!this.wall(id, direction)) {
+    Brain.prototype.addPath = function (direction, path, square_id, array_id) {
+        if (!this.wall(square_id, direction)) {
             var temp = new Path();
-            temp.copy(path);
+            temp.addReward(path.getReward());
+            for (var i = 0; i < path._path.length; i++) {
+                temp._path[i] = path._path[i];
+                temp._pathIds[i] = path._pathIds[i];
+            }
+            temp.addReward(Environment._squares[this.getId(square_id, direction)].getReward());
             temp.addDirection(direction);
+            temp.addId(this.getId(square_id, direction));
             temp.setArrayId(array_id);
-            temp.addId(id);
-            temp.addReward(Environment._squares[this.getId(id, direction)].getReward());
             this._frontier.push(temp);
         }
     };
-    Brain.prototype.expandNode = function (id, step, path) {
+    Brain.prototype.expandNode = function (square_id, step, path) {
         var direction = "";
+        this._frontier.splice(path.getArrayId(), 1);
         direction = "left";
-        this.addPath(direction, path, id, this._frontier.length - 1);
+        this.addPath(direction, path, square_id, this._frontier.length);
         direction = "up";
-        this.addPath(direction, path, id, this._frontier.length - 1);
+        this.addPath(direction, path, square_id, this._frontier.length);
         direction = "right";
-        this.addPath(direction, path, id, this._frontier.length - 1);
+        this.addPath(direction, path, square_id, this._frontier.length);
         direction = "down";
-        this.addPath(direction, path, id, this._frontier.length - 1);
+        this.addPath(direction, path, square_id, this._frontier.length);
         var next = 0;
         var maxReward = this._frontier[next].getReward();
         for (var i = 1; i < this._frontier.length; i++) {
@@ -153,16 +160,15 @@ var Brain = (function () {
         }
         this._iterations++;
         while (step > this._iterations) {
-            var newDirection = this._frontier[next].getFirst();
-            var newId = this._frontier[next].getFirstId();
+            var newId = this._frontier[next].getLastId();
             this.expandNode(newId, step, this._frontier[next]);
         }
     };
     Brain.prototype.thinkForward = function (step) {
         var move = "";
         var path = new Path();
-        var id = this._agent._currentSquare;
-        this.expandNode(id, step, path);
+        var square_id = this._agent._currentSquare;
+        this.expandNode(square_id, step, path);
         var next = 0;
         var maxReward = this._frontier[0].getReward();
         for (var i = 1; i < this._frontier.length; i++) {
@@ -172,7 +178,6 @@ var Brain = (function () {
             }
         }
         move = this._frontier[next].getFirst();
-        console.log(this._frontier.length);
         this.reset();
         this._agent.setMove(move);
     };
@@ -215,7 +220,7 @@ var Brain = (function () {
     };
     Brain.prototype.getLeftId = function (id) { return id - Environment._sideLength; };
     ;
-    Brain.prototype.getUpId = function (id) { return Environment._sideLength - 1; };
+    Brain.prototype.getUpId = function (id) { return id - 1; };
     ;
     Brain.prototype.getRightId = function (id) { return id + Environment._sideLength; };
     ;
