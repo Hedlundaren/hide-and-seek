@@ -3,6 +3,8 @@ var Path = (function () {
         this._directions = [];
         this._squareIds = [];
         this._reward = 0;
+        this._squares = [];
+        this.resetSquares();
     }
     Path.prototype.addReward = function (reward) { this._reward = this._reward + reward; };
     Path.prototype.addDirection = function (direction) { this._directions.push(direction); };
@@ -22,21 +24,33 @@ var Path = (function () {
             this.addSquareId(path._squareIds[i]);
             this.addDirection(path._directions[i]);
         }
+        this._squares = [];
+        for (var i = 0; i < path._squares.length; i++) {
+            this._squares.push(path._squares[i]);
+        }
+    };
+    Path.prototype.resetSquares = function () {
+        this._squares = [];
+        for (var i = 0; i < Environment._squares.length; i++) {
+            var newSquare;
+            newSquare = new Square($V([0, 0]), Environment._squares[i].getId(), Environment._squares[i].getType, 0, 0);
+            newSquare.copy(Environment._squares[i]);
+            this._squares.push(newSquare);
+        }
     };
     Path.prototype.reset = function () {
         this._directions = [];
         this._squareIds = [];
         this._reward = 0;
+        this.resetSquares();
     };
     return Path;
 }());
 var Brain = (function () {
     function Brain(agent, type) {
-        var _this = this;
         this.onKeyDown = function (e) {
             switch (e.key) {
                 case "Control":
-                    console.log(_this.getId(_this._agent._currentSquare, "up"));
                     break;
             }
         };
@@ -67,6 +81,7 @@ var Brain = (function () {
             this._avoid_red = true;
         else
             this._avoid_red = false;
+        Sprite.setTexture("textures/" + type + ".png");
     };
     Brain.prototype.getBrain = function () {
         return this._type;
@@ -92,11 +107,11 @@ var Brain = (function () {
                 this.thinkSimple();
                 break;
             case "forward":
-                this.thinkForward(500);
+                this.thinkForward(250);
                 this._avoid_red = false;
                 break;
             case "careful":
-                this.thinkForward(300);
+                this.thinkForward(250);
                 this._avoid_red = true;
                 break;
             case "value":
@@ -110,7 +125,7 @@ var Brain = (function () {
     Brain.prototype.tryAddDirection = function (direction, path, prev_square_id) {
         var current_square_id = this.getId(prev_square_id, direction);
         var red_check = true;
-        if (this._avoid_red && !this.wall(prev_square_id, direction) && Environment._squares[current_square_id].getType() == "red") {
+        if (this._avoid_red && !this.wall(prev_square_id, direction) && path._squares[current_square_id].getType() == "red") {
             red_check = false;
         }
         if (!this.wall(prev_square_id, direction) && red_check) {
@@ -118,7 +133,7 @@ var Brain = (function () {
             newPath.copy(path);
             newPath.addDirection(direction);
             newPath.addSquareId(current_square_id);
-            newPath.addReward(Environment._squares[current_square_id].getReward());
+            newPath.addReward(path._squares[current_square_id].getReward());
             var bad_expansion = false;
             var bad_node = false;
             var bad_id = -1;
@@ -143,7 +158,9 @@ var Brain = (function () {
                 this._frontier = temp_frontier;
             }
             if (!bad_expansion) {
+                newPath._squares[current_square_id].setType("neutral");
                 this.addFrontier(newPath);
+                this._iterations++;
             }
         }
     };
@@ -159,7 +176,6 @@ var Brain = (function () {
         return array;
     };
     Brain.prototype.expandNode = function (square_id, path) {
-        this._iterations++;
         var dirs = ["left", "up", "right", "down"];
         dirs = this.shuffle(dirs);
         for (var i = 0; i < dirs.length; i++) {
@@ -185,7 +201,9 @@ var Brain = (function () {
                 next_frontier_id = i;
             }
         }
+        console.log(this._frontier[next_frontier_id].getFirst_Direction() + ": " + this._frontier[next_frontier_id].getReward());
         if (this._frontier[next_frontier_id].getReward() < 0) {
+            console.log("Done.");
             this.Done();
             this.setMove("");
         }
@@ -196,23 +214,9 @@ var Brain = (function () {
         }
     };
     Brain.prototype.thinkStupid = function () {
-        var move = "";
-        var num = Math.floor(Math.random() * 4);
-        switch (num) {
-            case 0:
-                move = "left";
-                break;
-            case 1:
-                move = "up";
-                break;
-            case 2:
-                move = "right";
-                break;
-            case 3:
-                move = "down";
-                break;
-        }
-        this.setMove(move);
+        var dirs = ["left", "up", "right", "down"];
+        this.shuffle(dirs);
+        this.setMove(dirs[0]);
     };
     Brain.prototype.thinkSimple = function () {
         var move = "";

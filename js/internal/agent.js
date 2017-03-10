@@ -70,11 +70,8 @@ var Agent = (function () {
                     case 32:
                         _this.toggleAutoMove();
                         break;
-                    case 188:
-                        _this.speedDown();
-                        break;
-                    case 190:
-                        _this.speedUp();
+                    case 81:
+                        _this.toggleSpeed();
                         break;
                     case 49:
                         _this._brain.setBrain("stupid");
@@ -103,14 +100,14 @@ var Agent = (function () {
         this._acceleration = $V([0, 0]);
         this._mass = 0.3;
         this._fast = true;
-        this._brain = new Brain(this, "forward");
+        this._brain = new Brain(this, "");
         this._totalReward = 0.0;
-        this._sprite = new Sprite("textures/test.png");
+        this._sprite = new Sprite("textures/AI.png");
         this._goalPosition = this._position;
         this._currentSquare = 15;
         this._numOfMoves = 0;
         this._iteration = 0;
-        this._travelTimer = new Stopwatch(0.5);
+        this._travelTimer = new Stopwatch(0.1);
         this._autoMove = false;
         this._nextMove = "";
         this._HUD = true;
@@ -120,7 +117,7 @@ var Agent = (function () {
         window.addEventListener('keydown', this.onKeyDown, false);
         window.addEventListener('mousedown', this.onMouseDown, false);
         this._brain.setBrain("forward");
-        $('.fa-rocket').toggleClass('fa-wheelchair');
+        $('.fa-rocket').toggleClass('fa-blind');
     }
     Agent.prototype.setMove = function (direction) {
         this._nextMove = direction;
@@ -295,7 +292,7 @@ var Agent = (function () {
         this._numOfMoves++;
         this.updateInfo();
         if (Environment._squares[goal].getType() != "start") {
-            Environment._squares[goal].setType("neutral", Environment._theme);
+            Environment._squares[goal].setType("neutral");
         }
     };
     Agent.prototype.hitWall = function () {
@@ -327,7 +324,7 @@ var Agent = (function () {
         this._travelTimer.setStartTime(newTime);
     };
     Agent.prototype.toggleSpeed = function () {
-        $('.fa-rocket').toggleClass('fa-wheelchair');
+        $('.fa-rocket').toggleClass('fa-blind');
         this._fast = !this._fast;
         if (this._fast)
             this.speedUp();
@@ -335,7 +332,7 @@ var Agent = (function () {
             this.speedDown();
     };
     Agent.prototype.speedUp = function () {
-        this.setSpeed(0.10);
+        this.setSpeed(0.1);
         this._fast = true;
     };
     Agent.prototype.speedDown = function () {

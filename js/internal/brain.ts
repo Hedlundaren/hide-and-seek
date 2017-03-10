@@ -10,11 +10,14 @@ class Path{
   public _directions : string[];
   public _squareIds : number[]; // square ids
   public _reward : number; // Used for picking path and expanding nodes
+  public _squares : Square[]; // The updated environment of this path
 
   constructor(){
     this._directions = []; // array of directions
     this._squareIds = []; // array of square ids
     this._reward = 0; // total reward of this path
+    this._squares = [];
+    this.resetSquares();
   }
 
   public addReward(reward : number) : void{ this._reward = this._reward + reward; }
@@ -33,12 +36,27 @@ class Path{
       this.addSquareId(path._squareIds[i]);
       this.addDirection(path._directions[i]);
     }
+    this._squares = [];
+    for(var i = 0; i < path._squares.length; i++){
+      this._squares.push(path._squares[i]);
+    }
+  }
+
+  private resetSquares(){
+    this._squares = [];
+    for(var i = 0; i < Environment._squares.length; i++){
+      var newSquare : Square;
+      newSquare = new Square($V([0,0]), Environment._squares[i].getId(), Environment._squares[i].getType, 0,0);
+      newSquare.copy(Environment._squares[i]);
+      this._squares.push(newSquare);
+    }
   }
 
   public reset(){
     this._directions = [];
     this._squareIds = [];
     this._reward = 0;
+    this.resetSquares();
   }
 }
 
@@ -66,7 +84,6 @@ class Brain{
   onKeyDown = (e) => {
     switch(e.key){
       case "Control" :
-      console.log(this.getId(this._agent._currentSquare, "up"));
       break;
     }
 
@@ -90,6 +107,7 @@ class Brain{
     this._agent.setBrainSelected(type, this._type);
     this._type = type;
     if(type == "careful") this._avoid_red = true; else this._avoid_red = false;
+    Sprite.setTexture("textures/" + type + ".png");
   }
 
   public getBrain() : string{
@@ -115,8 +133,8 @@ class Brain{
     switch(this.getBrain()){
       case "stupid" : this.thinkStupid(); break;
       case "simple" : this.thinkSimple(); break;
-      case "forward" : this.thinkForward(500); this._avoid_red = false; break;
-      case "careful" : this.thinkForward(300); this._avoid_red = true; break;
+      case "forward" : this.thinkForward(250); this._avoid_red = false; break;
+      case "careful" : this.thinkForward(250); this._avoid_red = true; break;
       case "value" : this.thinkStupid(); break;
       case "policy" : this.thinkStupid(); break;
     }
@@ -132,12 +150,14 @@ class Brain{
 
     // Checker becomes false if we should avoid red and next square is red
     var red_check = true;
-    if(this._avoid_red && !this.wall(prev_square_id, direction) && Environment._squares[current_square_id].getType() == "red"){
+    if(this._avoid_red && !this.wall(prev_square_id, direction) && path._squares[current_square_id].getType() == "red"){
       red_check = false;
     }
 
     if(!this.wall(prev_square_id, direction) && red_check){
 
+
+      // Here we actually expand the node and add it to our path
       // Create new path with old values
       var newPath = new Path();
       newPath.copy(path); // copy existing path into newPath
@@ -145,7 +165,7 @@ class Brain{
       // Add new values
       newPath.addDirection(direction);
       newPath.addSquareId(current_square_id);
-      newPath.addReward(Environment._squares[current_square_id].getReward());
+      newPath.addReward(path._squares[current_square_id].getReward());
 
       // See if node ending already exists with better outcome
       var bad_expansion : boolean = false;
@@ -173,10 +193,11 @@ class Brain{
         this._frontier = temp_frontier;
       }
       if(!bad_expansion){
+        newPath._squares[current_square_id].setType("neutral");
         this.addFrontier(newPath);
+        this._iterations++;
       }
     }
-
   }
 
   private shuffle(array) {
@@ -192,7 +213,7 @@ class Brain{
   }
 
   private expandNode(square_id, path){
-    this._iterations++;
+
     // expand node in all directions randomly
     var dirs = ["left", "up", "right", "down"];
     dirs = this.shuffle(dirs);
@@ -229,8 +250,10 @@ class Brain{
       }
     }
 
+    console.log(this._frontier[next_frontier_id].getFirst_Direction() + ": " + this._frontier[next_frontier_id].getReward() );
     // make it its first move if not done
     if(this._frontier[next_frontier_id].getReward() < 0) {
+      console.log("Done.");
       this.Done();
       this.setMove("");
     } else{
@@ -245,16 +268,9 @@ class Brain{
   concidering its circumstances.
   =======================================*/
   private thinkStupid() : void{
-    // Randomize direction
-    var move = "";
-    var num = Math.floor(Math.random() * 4); // random 0 - 3
-    switch(num){
-      case 0 : move = "left"; break;
-      case 1 : move = "up"; break;
-      case 2 : move = "right"; break;
-      case 3 : move = "down"; break;
-    }
-    this.setMove(move)
+    var dirs = ["left", "up", "right", "down"];
+    this.shuffle(dirs);
+    this.setMove(dirs[0])
   }
 
   /*=======================================

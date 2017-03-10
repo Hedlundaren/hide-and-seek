@@ -8,8 +8,8 @@ class Main{
   private _renderer : Renderer;
   private _environment : Environment;
 
-  constructor(){
-    this._environment = new Environment();
+  constructor(side : number, start : number){
+    this._environment = new Environment(side, start);
     this._renderer = new Renderer();
     window.addEventListener( 'mousedown', this.onMouseDown, false );
     window.addEventListener( 'keydown', this.onKeyDown, false );
@@ -55,15 +55,15 @@ class Main{
       Environment._theme = "night";
 
     for(var i = 0; i < Environment._squares.length; i++){
-      Environment._squares[i].setType(Environment._squares[i].getType(), Environment._theme);
+      Environment._squares[i].setType(Environment._squares[i].getType());
     }
-    Environment._background.setType(Environment._background.getType(), Environment._theme);
-    Environment._backdrop1.setType(Environment._backdrop1.getType(), Environment._theme);
-    Environment._backdrop2.setType(Environment._backdrop2.getType(), Environment._theme);
+    Environment._background.setType(Environment._background.getType());
+    Environment._backdrop1.setType(Environment._backdrop1.getType());
+    Environment._backdrop2.setType(Environment._backdrop2.getType());
 
     if(Environment._theme == "night"){ // NIGHT
       $("#HUD").css("opacity", "0.7");
-      $("#all-holder").css("background", "RGBA(70,60,70,0.15)");
+      $("#all-holder").css("background", "RGBA(80,70,80,0.25)");
       $("body").css("background", "RGBA(20, 20, 20,1.0)");
       this._renderer.setBackground("0x222222");
 
@@ -81,6 +81,6 @@ class Main{
 
 
 window.onload = () => {
-    var main = new Main();
+    var main = new Main(6, 15);
     main.start();
 };

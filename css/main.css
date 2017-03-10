@@ -8,7 +8,7 @@ body{
 	height: 700px;
    margin: 0 auto;
 	 padding: 0px;
-	background: RGBA(70,60,70,0.15);
+	background: RGBA(80,70,80,0.25);
 	box-shadow: 2px 5px 5px RGBA(10,10,10,.3);
 }
 
@@ -31,7 +31,16 @@ canvas{
 
 .button{
 	cursor: default;
+	outline: 0;
 }
+
+
+
+button::-moz-focus-inner {
+  border: 0;
+}
+
+
 
 title{
 	background: #111111;
