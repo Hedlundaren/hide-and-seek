@@ -1,7 +1,7 @@
 var Environment = (function () {
     function Environment(side, start) {
         Environment._theme = "night";
-        Environment._mapType = "random";
+        Environment._mapType = "standard";
         Environment._sideLength = side;
         Environment._start = start;
         this.createGrid(Environment._sideLength, Environment._sideLength, 500);
@@ -16,6 +16,9 @@ var Environment = (function () {
     };
     Environment.setMap = function (type) {
         if (type == "standard") {
+            for (var i = 0; i < Environment._squares.length; i++) {
+                Environment._squares[i].setType("neutral");
+            }
             Environment._squares[Environment._start].setType("start");
             Environment._squares[0].setType("green");
             Environment._squares[12].setType("green");

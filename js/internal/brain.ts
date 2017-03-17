@@ -135,10 +135,143 @@ class Brain{
       case "simple" : this.thinkSimple(); break;
       case "forward" : this.thinkForward(250); this._avoid_red = false; break;
       case "careful" : this.thinkForward(250); this._avoid_red = true; break;
-      case "value" : this.thinkStupid(); break;
-      case "policy" : this.thinkStupid(); break;
+      case "value" : this.thinkValue(50); break;
+      case "policy" : this.thinkPolicy(50); break;
     }
   }
+
+  // PART 1 - VALUE IITERATION
+  private thinkPolicy(N_ITERATIONS : number){
+
+  }
+
+  // PART 1 - VALUE IITERATION
+  private thinkValue(N_ITERATIONS : number){
+
+    // Initiate all states with U(s) = 0
+    var N_STATES = Environment._squares.length;
+    for(var square_id = 0; square_id < N_STATES; square_id++){
+      Environment._squares[square_id].setUtility(0);
+    }
+
+    // Update all states N_ITERATIONS
+    // according to the Bellman Equation
+    for(var i = 0; i < N_ITERATIONS; i++){
+
+      // For each iteration - update Utilities of all states
+      // Initiate all states with U(s) = 0
+      for(var square_id = 0; square_id < N_STATES; square_id++){
+        // Calculate utility of current state
+        // U = R + gamma * max (PU) - Bellman Equation
+        var PU = []; // List of possible choices
+        var PU_dir = []; // Directions corresponding to choices
+
+        // 1. Current states reward
+        var R = Environment._squares[square_id].getReward();
+        // 2. Set discount factor (pre-defined)
+        var gamma = 0.99;
+        // 3. Get outcome of possible actions
+        // 3.1 Turn left <-
+        if(!this.wall(square_id, "left")){
+          var PU_left = 0.8 * Environment._squares[this.getId(square_id, "left")].getUtility();
+          if(!this.wall(square_id, "down"))
+            PU_left  += 0.1 * (Environment._squares[this.getId(square_id, "down")].getUtility());
+          if(!this.wall(square_id, "up"))
+            PU_left += 0.1 * (Environment._squares[this.getId(square_id, "up")].getUtility());
+
+          PU.push(PU_left);
+          PU_dir.push("left")
+        }
+        // 3.2 Turn up ^
+        if(!this.wall(square_id, "up")){
+          var PU_up = 0.8 * Environment._squares[this.getId(square_id, "up")].getUtility();
+          if(!this.wall(square_id, "left"))
+            PU_up  += 0.1 * (Environment._squares[this.getId(square_id, "left")].getUtility());
+          if(!this.wall(square_id, "right"))
+            PU_up += 0.1 * (Environment._squares[this.getId(square_id, "right")].getUtility());
+
+          PU.push(PU_up);
+          PU_dir.push("up")
+        }
+        // 3.3 Turn right ->
+        if(!this.wall(square_id, "right")){
+          var PU_right = 0.8 * Environment._squares[this.getId(square_id, "right")].getUtility();
+          if(!this.wall(square_id, "up"))
+            PU_right +=  0.1 * (Environment._squares[this.getId(square_id, "up")].getUtility());
+          if(!this.wall(square_id, "down"))
+            PU_right +=  0.1 * (Environment._squares[this.getId(square_id, "down")].getUtility());
+          PU.push(PU_right);
+          PU_dir.push("right")
+        }
+        // 3.4 Turn down v
+        if(!this.wall(square_id, "down")){
+          var PU_down = 0.8 * Environment._squares[this.getId(square_id, "down")].getUtility();
+          if(!this.wall(square_id, "right"))
+            PU_down +=  0.1 * (Environment._squares[this.getId(square_id, "right")].getUtility());
+          if(!this.wall(square_id, "left"))
+            PU_down +=  0.1 * (Environment._squares[this.getId(square_id, "left")].getUtility());
+
+          PU.push(PU_down);
+          PU_dir.push("down")
+        }
+
+        var best_value = PU[0]; // Assuming there is at least one option for the agent
+        var best_choice = 0;
+        for(var choice = 1; choice < PU.length; choice++){
+          if(best_value < PU[choice]){ // choose best value and best choice
+            best_value = PU[choice];
+            best_choice = choice;
+          }
+        }
+
+        // Update utilities of states
+        var U = R + gamma * best_value;
+        Environment._squares[square_id].setUtility(U);
+
+      } // END OF N_STATES
+    } // END OF N_ITERATIONS
+
+    // Now all iterations are done and we should
+    // choose the direction with best/highest utility
+    var Utilities = []; // List of possible choices
+    var Dirs = []; // Directions corresponding to choices
+    var current_square_id = this._agent._currentSquare;
+
+    if(!this.wall(current_square_id, "left")){
+      var Utility_left = Environment._squares[this.getId(current_square_id, "left")].getUtility();
+      Utilities.push(Utility_left);
+      Dirs.push("left")
+    }
+    if(!this.wall(current_square_id, "up")){
+      var Utility_up = Environment._squares[this.getId(current_square_id, "up")].getUtility();
+      Utilities.push(Utility_up);
+      Dirs.push("up")
+    }
+    if(!this.wall(current_square_id, "right")){
+      var Utility_right = Environment._squares[this.getId(current_square_id, "right")].getUtility();
+      Utilities.push(Utility_right);
+      Dirs.push("right")
+    }
+    if(!this.wall(current_square_id, "down")){
+      var Utility_down = Environment._squares[this.getId(current_square_id, "down")].getUtility();
+      Utilities.push(Utility_down);
+      Dirs.push("down")
+    }
+
+    var best_value = Utilities[0]; // Assuming there is at least one option for the agent
+    var best_choice = 0;
+    for(var choice = 1; choice < Utilities.length; choice++){
+      if(best_value < Utilities[choice]){ // choose best value and best choice
+        best_value = Utilities[choice];
+        best_choice = choice;
+      }
+    }
+
+    // Move agent
+    this.setMove(Dirs[best_choice]);
+  }
+
+
 
   /*=======================================
     thinkForward expands every node that leads to a new final destination with better reward.
@@ -153,6 +286,7 @@ class Brain{
     if(this._avoid_red && !this.wall(prev_square_id, direction) && path._squares[current_square_id].getType() == "red"){
       red_check = false;
     }
+    this._iterations++;
 
     if(!this.wall(prev_square_id, direction) && red_check){
 
@@ -193,9 +327,9 @@ class Brain{
         this._frontier = temp_frontier;
       }
       if(!bad_expansion){
-        newPath._squares[current_square_id].setType("neutral");
+        if(this._agent.UPDATE_SQUARES)
+          newPath._squares[current_square_id].setType("neutral");
         this.addFrontier(newPath);
-        this._iterations++;
       }
     }
   }
@@ -250,12 +384,10 @@ class Brain{
       }
     }
 
-    console.log(this._frontier[next_frontier_id].getFirst_Direction() + ": " + this._frontier[next_frontier_id].getReward() );
     // make it its first move if not done
     if(this._frontier[next_frontier_id].getReward() < 0) {
-      console.log("Done.");
       this.Done();
-      this.setMove("");
+      this.setMove(""); // Stop moving
     } else{
       move = this._frontier[next_frontier_id].getFirst_Direction();
       this.setMove(move);

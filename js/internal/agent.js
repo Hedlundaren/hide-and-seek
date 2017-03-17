@@ -34,6 +34,28 @@ var Agent = (function () {
                 case "Policy":
                     _this._brain.setBrain("policy");
                     break;
+                case "Random Map":
+                    var current = document.getElementById("random_map");
+                    if (Environment._mapType != "standard") {
+                        Environment._mapType = "standard";
+                        $(current).css("border-left", "7px solid RGBA(240,140,140,1)");
+                    }
+                    else {
+                        $(current).css("border-left", "7px solid RGBA(140,240,140,1)");
+                        Environment._mapType = "random";
+                    }
+                    _this.reset(15);
+                    break;
+                case "Update Squares":
+                    _this.UPDATE_SQUARES = !_this.UPDATE_SQUARES;
+                    var current = document.getElementById("update_squares");
+                    if (_this.UPDATE_SQUARES) {
+                        $(current).css("border-left", "7px solid RGBA(140,240,140,1)");
+                    }
+                    else {
+                        $(current).css("border-left", "7px solid RGBA(240,140,140,1)");
+                    }
+                    break;
                 default:
             }
         };
@@ -110,13 +132,14 @@ var Agent = (function () {
         this._travelTimer = new Stopwatch(0.1);
         this._autoMove = false;
         this._nextMove = "";
-        this._HUD = true;
+        this._HUD = false;
+        this.UPDATE_SQUARES = false;
         this._prev_pos_error = $V([0, 0]);
         this._pos_integral = $V([0, 0]);
         this.updateInfo();
         window.addEventListener('keydown', this.onKeyDown, false);
         window.addEventListener('mousedown', this.onMouseDown, false);
-        this._brain.setBrain("forward");
+        this._brain.setBrain("value");
         $('.fa-rocket').toggleClass('fa-blind');
     }
     Agent.prototype.setMove = function (direction) {
@@ -198,7 +221,7 @@ var Agent = (function () {
         return '<p class= "' + Environment._squares[this._currentSquare].getType() + ' history-text"' +
             '>' + this._numOfMoves +
             ' | ' + '(' + pos[0] + ',' + pos[1] + ')' +
-            ' | ' + Math.round(Environment._squares[this._currentSquare].getReward() * 100) / 100 +
+            ' | ' + Math.round(Environment._squares[this._currentSquare].getUtility() * 100) / 100 +
             ' | ' + Math.round(this._totalReward * 100) / 100 +
             '</p>';
     };
@@ -211,7 +234,7 @@ var Agent = (function () {
         var agentTotRewardDiv = document.getElementById('agent-tot-reward');
         agentNMovesDiv.innerHTML = '' + this._numOfMoves;
         agentPosDiv.innerHTML = '(' + pos[0] + ',' + pos[1] + ')';
-        agentRewardDiv.innerHTML = '' + Math.round(Environment._squares[this._currentSquare].getReward() * 100) / 100;
+        agentRewardDiv.innerHTML = '' + Math.round(Environment._squares[this._currentSquare].getUtility() * 100) / 100;
         agentTotRewardDiv.innerHTML = '' + Math.round(this._totalReward * 100) / 100;
         agentCurrentStatusDiv.className = Environment._squares[this._currentSquare].getType();
     };
@@ -292,7 +315,8 @@ var Agent = (function () {
         this._numOfMoves++;
         this.updateInfo();
         if (Environment._squares[goal].getType() != "start") {
-            Environment._squares[goal].setType("neutral");
+            if (this.UPDATE_SQUARES)
+                Environment._squares[goal].setType("neutral");
         }
     };
     Agent.prototype.hitWall = function () {

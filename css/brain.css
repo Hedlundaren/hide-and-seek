@@ -21,7 +21,7 @@
 	font-family: monospace;
 	font-size: 20px;
 	font-weight: bold;
-	margin-top: 15px;
+	margin-top: 10px;
 	z-index: 3;
 
 }
@@ -42,4 +42,31 @@
 	top: 0px;
 	left: 40px;
 	z-index: 1;
+}
+
+.special-button{
+	position: relative;
+	opacity: 0.5;
+	left: 10px;
+	width: 160px;
+	height: 45px;
+	background: RGBA(170, 170, 170, 0.6);
+	border: 2px solid RGBA(240,240,240,1);
+	border-left: 7px solid RGBA(240,140,140,1);
+	border-radius: 1px;
+	color: RGBA(240,240,240,1);
+	font-family: monospace;
+	font-size: 16px;
+	font-weight: bold;
+	margin-top: 15px;
+	z-index: 3;
+	box-shadow: 2px 5px 5px RGBA(10,10,10,.9);
+}
+
+#random_map{
+	
+}
+
+#update_squares{
+
 }
