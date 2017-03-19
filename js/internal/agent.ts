@@ -60,7 +60,7 @@ class Agent{
     this._brain.setBrain("policy");
     $('.fa-rocket').toggleClass('fa-blind');
     this.toggleSpeed();
-
+    this.toggleHUD();
   }
 
   // ========================================
@@ -211,6 +211,13 @@ class Agent{
   public toggleAutoMove() : void{
     this._autoMove = !this._autoMove;
     $('.fa-play').toggleClass('fa-pause');
+    if(!this._autoMove){
+      var playbtn =   document.getElementById('play-div');
+      playbtn.innerHTML = 'play';
+    }else{
+      var playbtn =   document.getElementById('play-div');
+      playbtn.innerHTML = 'stop';
+    }
   }
 
 
@@ -451,8 +458,16 @@ class Agent{
   private toggleSpeed(){
     $('.fa-rocket').toggleClass('fa-blind');
     this._fast = !this._fast;
-    if(this._fast) this.speedUp();
-    else this.speedDown();
+    var speedbtn =   document.getElementById('speed');
+
+    if(this._fast) {
+      this.speedUp();
+      speedbtn.innerHTML = 'slow';
+    }
+    else {
+      this.speedDown();
+      speedbtn.innerHTML = 'fast';
+    }
   }
 
   private speedUp() : void{

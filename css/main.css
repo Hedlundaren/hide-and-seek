@@ -1,6 +1,7 @@
 body{
 	margin: 0;
 	background: RGBA(20, 20, 20,1.0);
+
 }
 
 #all-holder{
@@ -15,7 +16,6 @@ body{
 canvas{
 	width: 500px;
 	height: 500px;
-	box-shadow: 2px 5px 5px RGBA(20,20,20,.3);
 }
 
 #canvas {

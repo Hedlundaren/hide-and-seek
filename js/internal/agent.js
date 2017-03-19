@@ -142,6 +142,7 @@ var Agent = (function () {
         this._brain.setBrain("policy");
         $('.fa-rocket').toggleClass('fa-blind');
         this.toggleSpeed();
+        this.toggleHUD();
     }
     Agent.prototype.setMove = function (direction) {
         this._nextMove = direction;
@@ -152,6 +153,14 @@ var Agent = (function () {
     Agent.prototype.toggleAutoMove = function () {
         this._autoMove = !this._autoMove;
         $('.fa-play').toggleClass('fa-pause');
+        if (!this._autoMove) {
+            var playbtn = document.getElementById('play-div');
+            playbtn.innerHTML = 'play';
+        }
+        else {
+            var playbtn = document.getElementById('play-div');
+            playbtn.innerHTML = 'stop';
+        }
     };
     Agent.prototype.update = function (deltaTime) {
         this._travelTimer.update(deltaTime);
@@ -351,10 +360,15 @@ var Agent = (function () {
     Agent.prototype.toggleSpeed = function () {
         $('.fa-rocket').toggleClass('fa-blind');
         this._fast = !this._fast;
-        if (this._fast)
+        var speedbtn = document.getElementById('speed');
+        if (this._fast) {
             this.speedUp();
-        else
+            speedbtn.innerHTML = 'slow';
+        }
+        else {
             this.speedDown();
+            speedbtn.innerHTML = 'fast';
+        }
     };
     Agent.prototype.speedUp = function () {
         this.setSpeed(0.1);
