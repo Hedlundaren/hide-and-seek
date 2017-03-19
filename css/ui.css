@@ -5,12 +5,12 @@
 	width: 40px;
 	height: 40px;
 	border-radius: 50px;
-	background: rgba(0, 0, 0, 0);
 	border: 2px solid RGBA(140,140,140,1);
 	color: RGBA(120,120,120,1);
 	font-family: monospace;
 	font-size: 15px;
 	font-weight: bold;
+	background: rgba(0, 0, 0, 0);
 }
 
 .ui-button:hover{
