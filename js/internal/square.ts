@@ -8,6 +8,7 @@ class Square{
   public _center : any;
   private _type : string;
   private _utility : number;
+  private _policy : string;
   private _envSize : number;
   private _squareSize : number;
   private _empty : boolean;
@@ -21,6 +22,7 @@ class Square{
     this._squareSize = size;
     this._empty = true;
     this._utility = 0.0;
+    this._policy = "left";
     this._borderRadius = radius;
     this._graphics = new PIXI.Graphics();
   }
@@ -29,6 +31,7 @@ class Square{
     this._id = square.getId();
     this._type = square.getType();
     this._utility = square.getUtility();
+    this._policy = square.getPolicy();
     this._empty = square._empty;
   }
 
@@ -60,11 +63,17 @@ class Square{
   public getUtility(){
     return this._utility;
   }
-  public addUtility(U : number){
-    return this._utility += U;
-  }
+
   public setUtility(U : number){
     return this._utility = U;
+  }
+
+  public getPolicy(){
+    return this._policy;
+  }
+
+  public setPolicy(P : string){
+    return this._policy = P;
   }
 
   public getReward() : number{

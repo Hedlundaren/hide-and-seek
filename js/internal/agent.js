@@ -139,7 +139,7 @@ var Agent = (function () {
         this.updateInfo();
         window.addEventListener('keydown', this.onKeyDown, false);
         window.addEventListener('mousedown', this.onMouseDown, false);
-        this._brain.setBrain("value");
+        this._brain.setBrain("policy");
         $('.fa-rocket').toggleClass('fa-blind');
     }
     Agent.prototype.setMove = function (direction) {

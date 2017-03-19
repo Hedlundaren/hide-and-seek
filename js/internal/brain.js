@@ -122,87 +122,215 @@ var Brain = (function () {
                 break;
         }
     };
-    Brain.prototype.thinkPolicy = function (N_ITERATIONS) {
-    };
     Brain.prototype.thinkValue = function (N_ITERATIONS) {
         var N_STATES = Environment._squares.length;
         for (var square_id = 0; square_id < N_STATES; square_id++) {
             Environment._squares[square_id].setUtility(0);
         }
         for (var i = 0; i < N_ITERATIONS; i++) {
-            for (var square_id = 0; square_id < N_STATES; square_id++) {
-                var PU = [];
-                var PU_dir = [];
-                var R = Environment._squares[square_id].getReward();
-                var gamma = 0.99;
-                if (!this.wall(square_id, "left")) {
-                    var PU_left = 0.8 * Environment._squares[this.getId(square_id, "left")].getUtility();
-                    if (!this.wall(square_id, "down"))
-                        PU_left += 0.1 * (Environment._squares[this.getId(square_id, "down")].getUtility());
-                    if (!this.wall(square_id, "up"))
-                        PU_left += 0.1 * (Environment._squares[this.getId(square_id, "up")].getUtility());
-                    PU.push(PU_left);
-                    PU_dir.push("left");
-                }
-                if (!this.wall(square_id, "up")) {
-                    var PU_up = 0.8 * Environment._squares[this.getId(square_id, "up")].getUtility();
-                    if (!this.wall(square_id, "left"))
-                        PU_up += 0.1 * (Environment._squares[this.getId(square_id, "left")].getUtility());
-                    if (!this.wall(square_id, "right"))
-                        PU_up += 0.1 * (Environment._squares[this.getId(square_id, "right")].getUtility());
-                    PU.push(PU_up);
-                    PU_dir.push("up");
-                }
-                if (!this.wall(square_id, "right")) {
-                    var PU_right = 0.8 * Environment._squares[this.getId(square_id, "right")].getUtility();
-                    if (!this.wall(square_id, "up"))
-                        PU_right += 0.1 * (Environment._squares[this.getId(square_id, "up")].getUtility());
-                    if (!this.wall(square_id, "down"))
-                        PU_right += 0.1 * (Environment._squares[this.getId(square_id, "down")].getUtility());
-                    PU.push(PU_right);
-                    PU_dir.push("right");
-                }
-                if (!this.wall(square_id, "down")) {
-                    var PU_down = 0.8 * Environment._squares[this.getId(square_id, "down")].getUtility();
-                    if (!this.wall(square_id, "right"))
-                        PU_down += 0.1 * (Environment._squares[this.getId(square_id, "right")].getUtility());
-                    if (!this.wall(square_id, "left"))
-                        PU_down += 0.1 * (Environment._squares[this.getId(square_id, "left")].getUtility());
-                    PU.push(PU_down);
-                    PU_dir.push("down");
-                }
-                var best_value = PU[0];
-                var best_choice = 0;
-                for (var choice = 1; choice < PU.length; choice++) {
-                    if (best_value < PU[choice]) {
-                        best_value = PU[choice];
-                        best_choice = choice;
-                    }
-                }
-                var U = R + gamma * best_value;
-                Environment._squares[square_id].setUtility(U);
-            }
+            this.valueDetermination(Environment._squares);
+            console.log("(" + i + ") : " + Environment._squares[this._agent._currentSquare].getUtility());
         }
+        var best_move = this.getBestPolicy(Environment._squares, this._agent._currentSquare);
+        this.displayAllUtilities();
+        this.setMove(best_move);
+    };
+    Brain.prototype.thinkPolicy = function (N_ITERATIONS) {
+        var N_STATES = Environment._squares.length;
+        for (var square_id = 0; square_id < N_STATES; square_id++) {
+            Environment._squares[square_id].setUtility(0);
+        }
+        this.policyUpdate(Environment._squares, this._agent._currentSquare);
+        for (var i = 0; i < N_ITERATIONS; i++) {
+            this.policyEvaluation(Environment._squares);
+            this.policyUpdate(Environment._squares, this._agent._currentSquare);
+        }
+        var best_move = Environment._squares[this._agent._currentSquare].getPolicy();
+        this.setMove(best_move);
+    };
+    Brain.prototype.valueDetermination = function (squares) {
+        var N_STATES = squares.length;
+        for (var square_id = 0; square_id < N_STATES; square_id++) {
+            var PU = [];
+            var PU_dir = [];
+            var R = squares[square_id].getReward();
+            var gamma = 0.99;
+            if (!this.wall(square_id, "left")) {
+                var PU_left = 0.8 * squares[this.getId(square_id, "left")].getUtility();
+                if (!this.wall(square_id, "down"))
+                    PU_left += 0.1 * (squares[this.getId(square_id, "down")].getUtility());
+                if (!this.wall(square_id, "up"))
+                    PU_left += 0.1 * (squares[this.getId(square_id, "up")].getUtility());
+                PU.push(PU_left);
+                PU_dir.push("left");
+            }
+            if (!this.wall(square_id, "up")) {
+                var PU_up = 0.8 * squares[this.getId(square_id, "up")].getUtility();
+                if (!this.wall(square_id, "left"))
+                    PU_up += 0.1 * (squares[this.getId(square_id, "left")].getUtility());
+                if (!this.wall(square_id, "right"))
+                    PU_up += 0.1 * (squares[this.getId(square_id, "right")].getUtility());
+                PU.push(PU_up);
+                PU_dir.push("up");
+            }
+            if (!this.wall(square_id, "right")) {
+                var PU_right = 0.8 * squares[this.getId(square_id, "right")].getUtility();
+                if (!this.wall(square_id, "up"))
+                    PU_right += 0.1 * (squares[this.getId(square_id, "up")].getUtility());
+                if (!this.wall(square_id, "down"))
+                    PU_right += 0.1 * (squares[this.getId(square_id, "down")].getUtility());
+                PU.push(PU_right);
+                PU_dir.push("right");
+            }
+            if (!this.wall(square_id, "down")) {
+                var PU_down = 0.8 * squares[this.getId(square_id, "down")].getUtility();
+                if (!this.wall(square_id, "right"))
+                    PU_down += 0.1 * (squares[this.getId(square_id, "right")].getUtility());
+                if (!this.wall(square_id, "left"))
+                    PU_down += 0.1 * (squares[this.getId(square_id, "left")].getUtility());
+                PU.push(PU_down);
+                PU_dir.push("down");
+            }
+            var best_value = PU[0];
+            var best_choice = 0;
+            for (var choice = 1; choice < PU.length; choice++) {
+                if (best_value < PU[choice]) {
+                    best_value = PU[choice];
+                    best_choice = choice;
+                }
+            }
+            var U = R + gamma * best_value;
+            squares[square_id].setUtility(U);
+        }
+    };
+    Brain.prototype.policyEvaluation = function (squares) {
+        var N_STATES = squares.length;
+        for (var square_id = 0; square_id < N_STATES; square_id++) {
+            var direction = squares[square_id].getPolicy();
+            var PU = [];
+            var PU_dir = [];
+            var R = squares[square_id].getReward();
+            var gamma = 0.99;
+            if (direction == "left" && !this.wall(square_id, "left")) {
+                var PU_left = 0.8 * squares[this.getId(square_id, "left")].getUtility();
+                if (!this.wall(square_id, "down"))
+                    PU_left += 0.1 * (squares[this.getId(square_id, "down")].getUtility());
+                if (!this.wall(square_id, "up"))
+                    PU_left += 0.1 * (squares[this.getId(square_id, "up")].getUtility());
+                PU.push(PU_left);
+                PU_dir.push("left");
+            }
+            if (direction == "up" && !this.wall(square_id, "up")) {
+                var PU_up = 0.8 * squares[this.getId(square_id, "up")].getUtility();
+                if (!this.wall(square_id, "left"))
+                    PU_up += 0.1 * (squares[this.getId(square_id, "left")].getUtility());
+                if (!this.wall(square_id, "right"))
+                    PU_up += 0.1 * (squares[this.getId(square_id, "right")].getUtility());
+                PU.push(PU_up);
+                PU_dir.push("up");
+            }
+            if (direction == "right" && !this.wall(square_id, "right")) {
+                var PU_right = 0.8 * squares[this.getId(square_id, "right")].getUtility();
+                if (!this.wall(square_id, "up"))
+                    PU_right += 0.1 * (squares[this.getId(square_id, "up")].getUtility());
+                if (!this.wall(square_id, "down"))
+                    PU_right += 0.1 * (squares[this.getId(square_id, "down")].getUtility());
+                PU.push(PU_right);
+                PU_dir.push("right");
+            }
+            if (direction == "down" && !this.wall(square_id, "down")) {
+                var PU_down = 0.8 * squares[this.getId(square_id, "down")].getUtility();
+                if (!this.wall(square_id, "right"))
+                    PU_down += 0.1 * (squares[this.getId(square_id, "right")].getUtility());
+                if (!this.wall(square_id, "left"))
+                    PU_down += 0.1 * (squares[this.getId(square_id, "left")].getUtility());
+                PU.push(PU_down);
+                PU_dir.push("down");
+            }
+            var best_value = PU[0];
+            var best_choice = 0;
+            for (var choice = 1; choice < PU.length; choice++) {
+                if (best_value < PU[choice]) {
+                    best_value = PU[choice];
+                    best_choice = choice;
+                }
+            }
+            var U = R + gamma * best_value;
+            Environment._squares[square_id].setUtility(U);
+        }
+    };
+    Brain.prototype.policyUpdate = function (squares, square_id) {
+        var N_STATES = squares.length;
+        for (var square_id = 0; square_id < N_STATES; square_id++) {
+            var PU = [];
+            var PU_dir = [];
+            if (!this.wall(square_id, "left")) {
+                var PU_left = 0.8 * squares[this.getId(square_id, "left")].getUtility();
+                if (!this.wall(square_id, "down"))
+                    PU_left += 0.1 * (squares[this.getId(square_id, "down")].getUtility());
+                if (!this.wall(square_id, "up"))
+                    PU_left += 0.1 * (squares[this.getId(square_id, "up")].getUtility());
+                PU.push(PU_left);
+                PU_dir.push("left");
+            }
+            if (!this.wall(square_id, "up")) {
+                var PU_up = 0.8 * squares[this.getId(square_id, "up")].getUtility();
+                if (!this.wall(square_id, "left"))
+                    PU_up += 0.1 * (squares[this.getId(square_id, "left")].getUtility());
+                if (!this.wall(square_id, "right"))
+                    PU_up += 0.1 * (squares[this.getId(square_id, "right")].getUtility());
+                PU.push(PU_up);
+                PU_dir.push("up");
+            }
+            if (!this.wall(square_id, "right")) {
+                var PU_right = 0.8 * squares[this.getId(square_id, "right")].getUtility();
+                if (!this.wall(square_id, "up"))
+                    PU_right += 0.1 * (squares[this.getId(square_id, "up")].getUtility());
+                if (!this.wall(square_id, "down"))
+                    PU_right += 0.1 * (squares[this.getId(square_id, "down")].getUtility());
+                PU.push(PU_right);
+                PU_dir.push("right");
+            }
+            if (!this.wall(square_id, "down")) {
+                var PU_down = 0.8 * squares[this.getId(square_id, "down")].getUtility();
+                if (!this.wall(square_id, "right"))
+                    PU_down += 0.1 * (squares[this.getId(square_id, "right")].getUtility());
+                if (!this.wall(square_id, "left"))
+                    PU_down += 0.1 * (squares[this.getId(square_id, "left")].getUtility());
+                PU.push(PU_down);
+                PU_dir.push("down");
+            }
+            var best_value = PU[0];
+            var best_choice = 0;
+            for (var choice = 1; choice < PU.length; choice++) {
+                if (best_value < PU[choice]) {
+                    best_value = PU[choice];
+                    best_choice = choice;
+                }
+            }
+            squares[square_id].setPolicy(PU_dir[best_choice]);
+        }
+    };
+    Brain.prototype.getBestPolicy = function (squares, current_square_id) {
         var Utilities = [];
         var Dirs = [];
-        var current_square_id = this._agent._currentSquare;
         if (!this.wall(current_square_id, "left")) {
-            var Utility_left = Environment._squares[this.getId(current_square_id, "left")].getUtility();
+            var Utility_left = squares[this.getId(current_square_id, "left")].getUtility();
             Utilities.push(Utility_left);
             Dirs.push("left");
         }
         if (!this.wall(current_square_id, "up")) {
-            var Utility_up = Environment._squares[this.getId(current_square_id, "up")].getUtility();
+            var Utility_up = squares[this.getId(current_square_id, "up")].getUtility();
             Utilities.push(Utility_up);
             Dirs.push("up");
         }
         if (!this.wall(current_square_id, "right")) {
-            var Utility_right = Environment._squares[this.getId(current_square_id, "right")].getUtility();
+            var Utility_right = squares[this.getId(current_square_id, "right")].getUtility();
             Utilities.push(Utility_right);
             Dirs.push("right");
         }
         if (!this.wall(current_square_id, "down")) {
-            var Utility_down = Environment._squares[this.getId(current_square_id, "down")].getUtility();
+            var Utility_down = squares[this.getId(current_square_id, "down")].getUtility();
             Utilities.push(Utility_down);
             Dirs.push("down");
         }
@@ -214,7 +342,20 @@ var Brain = (function () {
                 best_choice = choice;
             }
         }
-        this.setMove(Dirs[best_choice]);
+        return Dirs[best_choice];
+    };
+    Brain.prototype.displayAllUtilities = function () {
+        for (var j = 0; j < Environment._sideLength; j++) {
+            for (var i = 0; i < Environment._sideLength; i++) {
+                var id = j * Environment._sideLength + i;
+                if (Environment._squares[id].getType() != "wall") {
+                    console.log("(" + j + "," + i + ") : " + Environment._squares[id].getUtility() + "-> " + this.getBestPolicy(Environment._squares, id));
+                }
+                else {
+                    console.log("(" + j + "," + i + ") : wall");
+                }
+            }
+        }
     };
     Brain.prototype.tryAddDirection = function (direction, path, prev_square_id) {
         var current_square_id = this.getId(prev_square_id, direction);

@@ -74,7 +74,6 @@ class Main{
       $("body").css("background", "RGBA(200, 200, 200,1.0)");
 
     }
-
   }
 
 }

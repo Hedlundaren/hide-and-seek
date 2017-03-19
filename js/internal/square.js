@@ -6,6 +6,7 @@ var Square = (function () {
         this._squareSize = size;
         this._empty = true;
         this._utility = 0.0;
+        this._policy = "left";
         this._borderRadius = radius;
         this._graphics = new PIXI.Graphics();
     }
@@ -13,6 +14,7 @@ var Square = (function () {
         this._id = square.getId();
         this._type = square.getType();
         this._utility = square.getUtility();
+        this._policy = square.getPolicy();
         this._empty = square._empty;
     };
     Square.prototype.create = function () {
@@ -38,11 +40,14 @@ var Square = (function () {
     Square.prototype.getUtility = function () {
         return this._utility;
     };
-    Square.prototype.addUtility = function (U) {
-        return this._utility += U;
-    };
     Square.prototype.setUtility = function (U) {
         return this._utility = U;
+    };
+    Square.prototype.getPolicy = function () {
+        return this._policy;
+    };
+    Square.prototype.setPolicy = function (P) {
+        return this._policy = P;
     };
     Square.prototype.getReward = function () {
         switch (this._type) {

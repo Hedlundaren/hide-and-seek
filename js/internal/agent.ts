@@ -57,7 +57,7 @@ class Agent{
     window.addEventListener( 'mousedown', this.onMouseDown, false );
 
     // init
-    this._brain.setBrain("value");
+    this._brain.setBrain("policy");
     $('.fa-rocket').toggleClass('fa-blind');
 
 
@@ -433,7 +433,7 @@ class Agent{
       this.bumpTowards(this._nextMove);
     }
   }
-  private getGridPos() : any{
+  public getGridPos() : any{
     var size = Math.sqrt(Environment._squares.length)
     var xPos : number = Math.floor(this._currentSquare/size);
     var yPos : number = this._currentSquare % 6;
