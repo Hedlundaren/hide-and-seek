@@ -16,12 +16,14 @@
 .ui-button:hover{
 	border: 2px solid RGBA(200,200,200,1);
 	color: RGBA(200,200,200,1);
+	background: RGBA(50,50,50,0);
 }
 
 .ui-button:active{
 	border: 2px solid RGBA(140,140,140,1);
 	color: RGBA(120,120,120,1);
 	text-align: center;
+	background: RGBA(50,50,50,0);
 }
 
 #ui-holder{
