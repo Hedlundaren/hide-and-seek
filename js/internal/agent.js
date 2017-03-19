@@ -133,7 +133,7 @@ var Agent = (function () {
         this._autoMove = false;
         this._nextMove = "";
         this._HUD = false;
-        this.UPDATE_SQUARES = false;
+        this.UPDATE_SQUARES = true;
         this._prev_pos_error = $V([0, 0]);
         this._pos_integral = $V([0, 0]);
         this.updateInfo();
