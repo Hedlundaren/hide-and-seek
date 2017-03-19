@@ -34,6 +34,12 @@ canvas{
 	outline: 0;
 }
 
+.button:hover{
+	cursor: default;
+	outline: 0;
+	background: rgba(0, 0, 0, 0);
+}
+
 
 
 button::-moz-focus-inner {

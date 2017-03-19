@@ -5,7 +5,7 @@
 	width: 40px;
 	height: 40px;
 	border-radius: 50px;
-	background: RGBA(50,50,50,0);
+	background: rgba(0, 0, 0, 0);
 	border: 2px solid RGBA(140,140,140,1);
 	color: RGBA(120,120,120,1);
 	font-family: monospace;
@@ -16,14 +16,14 @@
 .ui-button:hover{
 	border: 2px solid RGBA(200,200,200,1);
 	color: RGBA(200,200,200,1);
-	background: RGBA(50,50,50,0);
+	background: rgba(0, 0, 0, 0);
 }
 
 .ui-button:active{
 	border: 2px solid RGBA(140,140,140,1);
 	color: RGBA(120,120,120,1);
+	background: rgba(0, 0, 0, 0);
 	text-align: center;
-	background: RGBA(50,50,50,0);
 }
 
 #ui-holder{
