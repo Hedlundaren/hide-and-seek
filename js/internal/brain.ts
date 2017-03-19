@@ -167,8 +167,13 @@ class Brain{
     // 4. Move Agent
     // Get best policy depending on current position
     var best_move = this.getBestPolicy(Environment._squares, this._agent._currentSquare);
-    this.displayAllUtilities();
-    this.setMove(best_move);
+
+    if(Environment._squares[this._agent._currentSquare].getUtility() < 0) {
+      this.Done();
+      this.setMove(""); // Stop moving
+    } else{
+      this.setMove(best_move);
+    }
 
   }
 
@@ -211,7 +216,14 @@ class Brain{
 
     // 5. Move agent
     var best_move = Environment._squares[this._agent._currentSquare].getPolicy();
-    this.setMove(best_move);
+    // make it its first move if not done
+
+    if(Environment._squares[this._agent._currentSquare].getUtility() < 0) {
+      this.Done();
+      this.setMove(""); // Stop moving
+    } else{
+      this.setMove(best_move);
+    }
 
   }
 

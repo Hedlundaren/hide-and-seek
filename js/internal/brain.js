@@ -132,8 +132,13 @@ var Brain = (function () {
             console.log("(" + i + ") : " + Environment._squares[this._agent._currentSquare].getUtility());
         }
         var best_move = this.getBestPolicy(Environment._squares, this._agent._currentSquare);
-        this.displayAllUtilities();
-        this.setMove(best_move);
+        if (Environment._squares[this._agent._currentSquare].getUtility() < 0) {
+            this.Done();
+            this.setMove("");
+        }
+        else {
+            this.setMove(best_move);
+        }
     };
     Brain.prototype.thinkPolicy = function (N_ITERATIONS) {
         var N_STATES = Environment._squares.length;
@@ -146,7 +151,13 @@ var Brain = (function () {
             this.policyUpdate(Environment._squares, this._agent._currentSquare);
         }
         var best_move = Environment._squares[this._agent._currentSquare].getPolicy();
-        this.setMove(best_move);
+        if (Environment._squares[this._agent._currentSquare].getUtility() < 0) {
+            this.Done();
+            this.setMove("");
+        }
+        else {
+            this.setMove(best_move);
+        }
     };
     Brain.prototype.valueDetermination = function (squares) {
         var N_STATES = squares.length;
