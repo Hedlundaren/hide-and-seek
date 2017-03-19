@@ -15,12 +15,11 @@
 	width: 140px;
 	height: 45px;
 	background: RGBA(120, 120, 120, 0);
-	border: 2px solid RGBA(140,140,140,1);
+	border: 1px solid RGBA(140,140,140,1);
 	border-radius: 50px;
 	color: RGBA(120,120,120,1);
 	font-family: monospace;
 	font-size: 20px;
-	font-weight: bold;
 	margin-top: 10px;
 	z-index: 3;
 
@@ -51,20 +50,19 @@
 	width: 160px;
 	height: 45px;
 	background: RGBA(170, 170, 170, 0.6);
-	border: 2px solid RGBA(240,240,240,1);
+	border: 1px solid RGBA(240,240,240,1);
 	border-left: 7px solid RGBA(240,140,140,1);
 	border-radius: 1px;
 	color: RGBA(240,240,240,1);
 	font-family: monospace;
 	font-size: 16px;
-	font-weight: bold;
 	margin-top: 15px;
 	z-index: 3;
 	box-shadow: 2px 5px 5px RGBA(10,10,10,.9);
 }
 
 #random_map{
-	
+
 }
 
 #update_squares{
