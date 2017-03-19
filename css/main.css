@@ -39,12 +39,10 @@ canvas{
 .button:hover{
 	cursor: default;
 	outline: 0;
-	background: rgba(0, 0, 0, 0);
 }
 
 .button:focus{
 	cursor: default;
-	background: rgba(0, 0, 0, 0);
 }
 
 
