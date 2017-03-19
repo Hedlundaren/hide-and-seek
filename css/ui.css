@@ -1,8 +1,8 @@
 
 .ui-button{
 	position: relative;
-	margin: 10px;
-	width: 40px;
+	margin: 8px;
+	width: 70px;
 	height: 40px;
 	border-radius: 50px;
 	border: 2px solid RGBA(140,140,140,1);
@@ -36,5 +36,5 @@
 	width: 480px;
 	height: 100px;
 	z-index: 3;
-	margin-left: 310px;
+	margin-left: 280px;
 }
