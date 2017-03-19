@@ -6,12 +6,12 @@
 	height: 40px;
 	border-radius: 50px;
 	border: 2px solid RGBA(140,140,140,1);
-	color: RGBA(120,120,120,1);
 	font-family: monospace;
 	font-size: 15px;
 	font-weight: bold;
 	background: rgba(0, 0, 0, 0);
-	z-index: 3;
+	z-index: 4;
+	color: RGBA(120,120,120,1);
 }
 
 .ui-button:hover{
@@ -29,6 +29,7 @@
 
 .ui-button:focus{
 	background: rgba(0, 0, 0, 0);
+	color: RGBA(120,120,120,1);
 }
 
 #ui-holder{
