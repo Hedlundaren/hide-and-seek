@@ -47,7 +47,7 @@ class Agent{
     this._autoMove = false;
     this._nextMove = "";
     this._HUD = false;
-    this.UPDATE_SQUARES = true;
+    this.UPDATE_SQUARES = false;
 
     this._prev_pos_error = $V([0,0]);
     this._pos_integral = $V([0,0]);
@@ -59,7 +59,7 @@ class Agent{
     // init
     this._brain.setBrain("policy");
     $('.fa-rocket').toggleClass('fa-blind');
-
+    this.toggleSpeed();
 
   }
 

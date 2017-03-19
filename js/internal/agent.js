@@ -133,7 +133,7 @@ var Agent = (function () {
         this._autoMove = false;
         this._nextMove = "";
         this._HUD = false;
-        this.UPDATE_SQUARES = true;
+        this.UPDATE_SQUARES = false;
         this._prev_pos_error = $V([0, 0]);
         this._pos_integral = $V([0, 0]);
         this.updateInfo();
@@ -141,6 +141,7 @@ var Agent = (function () {
         window.addEventListener('mousedown', this.onMouseDown, false);
         this._brain.setBrain("policy");
         $('.fa-rocket').toggleClass('fa-blind');
+        this.toggleSpeed();
     }
     Agent.prototype.setMove = function (direction) {
         this._nextMove = direction;
