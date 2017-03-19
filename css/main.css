@@ -33,6 +33,7 @@ canvas{
 	cursor: default;
 	outline: 0;
 	background: rgba(0, 0, 0, 0);
+	color: RGBA(120,120,120,1);
 }
 
 .button:hover{
